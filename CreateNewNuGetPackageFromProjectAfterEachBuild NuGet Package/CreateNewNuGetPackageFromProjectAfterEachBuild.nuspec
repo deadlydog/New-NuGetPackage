@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
+    <version>1.0.0.0</version>
+    <title>Create New NuGet Package From Project After Each Build</title>
+    <authors>Daniel Schroeder,iQmetrix</authors>
+    <owners>Daniel Schroeder,iQmetrix</owners>
+    <licenseUrl>https://newnugetpackage.codeplex.com/license</licenseUrl>
+    <projectUrl>https://newnugetpackage.codeplex.com/wikipage?title=NuGet%20Package%20To%20Create%20A%20NuGet%20Package%20From%20Your%20Project%20After%20Every%20Build</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Automatically creates a NuGet package from your project each time it builds. The NuGet package is placed in the project's output directory.
+	If you want to use a .nuspec file, place it in the same directory as the project's project file (e.g. .csproj, .vbproj, .fsproj).
+	This adds a PostBuildScripts folder to your project to house the PowerShell script that is called from the project's Post-Build event to create the NuGet package.
+	If it does not seem to be working, check the Output window for any errors that may have occurred.</description>
+    <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
+    <releaseNotes>First release posted to NuGet gallery.</releaseNotes>
+    <copyright>Daniel Schroeder 2013</copyright>
+    <tags>Auto Automatic Automatically Build Pack Create New NuGet Package From Project After Each Build On PowerShell Power Shell .nupkg</tags>
+  </metadata>
+  <files>
+    <file src="..\New-NuGetPackage.ps1" target="content\PostBuildScripts\New-NuGetPackage.ps1" />
+    <file src="NuGet.exe" target="content\PostBuildScripts\NuGet.exe" />
+    <file src="tools\Install.ps1" target="tools\Install.ps1" />
+    <file src="tools\Uninstall.ps1" target="tools\Uninstall.ps1" />
+  </files>
+</package>

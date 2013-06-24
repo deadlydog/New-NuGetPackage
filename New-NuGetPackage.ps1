@@ -39,7 +39,7 @@
 	
 	.PARAMETER NoPrompt
 	If this switch is provided the user will not be prompted for the version number or release notes; the current ones in the .nuspec file will be used (if available).
-	They will not be prompted for any other form of input either, such as if they want to push the package to a gallery, or to give input before the script exits when an error occurs.
+	The user will not be prompted for any other form of input either, such as if they want to push the package to a gallery, or to give input before the script exits when an error occurs.
 	
 	.PARAMETER NoPromptExceptOnError
 	The same as NoPrompt except if an error occurs the user will be prompted for input before the script exists, making sure they are notified that an error occurred.
@@ -68,7 +68,7 @@
 
 	.PARAMETER NuGetExecutableFilePath
 	The full path to NuGet.exe.
-	If not provided it is assumed that NuGet.exe has been added to your PATH and can be called directly from the command prompt.
+	If not provided it is assumed that NuGet.exe is in the same directory as this script, or that NuGet.exe has been added to your PATH and can be called directly from the command prompt.
 
 	.EXAMPLE
 	& .\New-NuGetPackage.ps1
@@ -187,7 +187,7 @@ param
 	[switch] $DoNotUpdateNuSpecFile,
 	
 	[Alias("NuGet")]
-	[string] $NuGetExecutableFilePath = "nuget.exe"
+	[string] $NuGetExecutableFilePath
 )
 
 # Turn on Strict Mode to help catch syntax-related errors.
@@ -253,7 +253,7 @@ function BackupNuSpecFilePath { return "$NuSpecFilePath.backup" }
 # Function to update the $NuSpecFilePath (.nuspec file) with the appropriate information before using it to create the NuGet package.
 function UpdateNuSpecFile
 {	
-	# Try and check the file out of TFS (if not using TFS a warning will be thrown, but script will continue).
+	# Try and check the file out of TFS.
 	Tfs-Checkout -Path $NuSpecFilePath
 	
 	# If we shouldn't update to the .nuspec file permanently, create a backup that we can restore from after.
@@ -590,6 +590,7 @@ function Get-TfExecutablePath
 
 	# Get the path to tf.exe.
 	$tfPath = "${vsIdePath}tf.exe"
+    $tfPath = Resolve-Path $tfPath
 	return $tfPath
 }
 
@@ -853,6 +854,25 @@ try
 	{
 		$PackOptions += " -OutputDirectory ""$backupOutputDirectory"""
 	}
+
+    # If a path to the NuGet executable was not provided, try and find it.
+    if ([string]::IsNullOrWhiteSpace($NuGetExecutableFilePath))
+    {
+        # If the NuGet executable is in the same directory as this script, use it.
+        $nugetExecutablePathInThisDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY "nuget.exe"
+        if (Test-Path $nugetExecutablePathInThisDirectory)
+        {
+            $NuGetExecutableFilePath = $nugetExecutablePathInThisDirectory
+        }
+        # Else we don't know where the executable is, so assume it has been added to the PATH.
+        else
+        {
+            $NuGetExecutableFilePath = "nuget.exe"
+        }
+    }
+
+    # Try and check the NuGet executable out of TFS in case it needs to update itself.
+    if (Test-Path $NuGetExecutableFilePath) { Tfs-Checkout -Path $NuGetExecutableFilePath }
 	
 	# Create the package.
 	$packCommand = "& ""$NuGetExecutableFilePath"" pack ""$fileToPack"" $PackOptions"
@@ -901,6 +921,21 @@ try
 		$pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nugetPackageFilePath"" $PushOptions"
 		Write-Debug "About to run command '$pushCommand'."
 		Invoke-Expression -Command $pushCommand | Tee-Object -Variable pushOutput
+
+        # If the package was pushed successfully.
+        if ($pushOutput.EndsWith("Your package was pushed."))
+        {
+            # If we don't know if the package should be deleted after it is pushed, prompt the user.
+
+            # If the package should be deleted, delete it.
+
+            # If the package was output to the default directory, and the directory is empty, delete the directory too.
+        }
+        # Else an error occurred while pushing the package, so throw and error.
+        else
+        {
+            throw "Could not determine if package was pushed to gallery successfully. Perhaps an error occurred while pushing it. Look for errors from NuGet above (in the console window)."
+        }
 	}
 }
 finally
@@ -909,7 +944,7 @@ finally
 	$backupNuSpecFilePath = BackupNuSpecFilePath
 	if ($DoNotUpdateNuSpecFile -and (Test-Path $backupNuSpecFilePath -PathType Leaf))
 	{
-		Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath
+		Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath -Force
 		Remove-Item -Path $backupNuSpecFilePath -Force
 	}
 }
