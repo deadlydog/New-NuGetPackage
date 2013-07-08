@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
-    <version>1.1.0.0</version>
+    <version>1.1.0.1</version>
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
