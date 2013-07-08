@@ -145,7 +145,7 @@
 	Version: 1.1
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
-	If this script is ran without the $NuSpecFilePath and $ProjectFilePath parameters, it will automatically search for a .nuspec or project file in the 
+	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
 	same directory as the script and use it if one is found. If none or more than one are found, the user will be prompted to specify the file to use.
 #>
 [CmdletBinding(DefaultParameterSetName="PackUsingNuSpec")]
