@@ -1,3 +1,16 @@
+#==========================================================
+# This script is ran automatically after every successful build.
+#
+# This script creates a NuGet package for the current project, and places the .nupkg file in the project's output directory (beside the .dll/.exe file).
+#
+# You may edit the values of the $versionNumber, $releaseNotes, and $additionPackOptions variables below to adjust the settings used to create the NuGet package.
+#
+# If you have modified this script:
+#	- if you uninstall the "Create New NuGet Package From Project After Each Build" package, this file will not be removed automatically; you will need to manually delete it.
+#	- if you update the "Create New NuGet Package From Project After Each Build" package, this file will not be updated unless you provide the "-FileConflictAction Overwrite" parameter 
+#		when installing. Also, if you do this then your custom changes will be lost. It might be easiest to backup the file, uninstall the package, delete the left-over file,
+#		reinstall the package, and then re-apply your custom changes.
+#==========================================================
 param ([string]$ProjectFilePath, [string]$OutputDirectory)
 $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
