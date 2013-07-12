@@ -14,6 +14,9 @@
 param ([string]$ProjectFilePath, [string]$OutputDirectory)
 $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
+# Make sure the OutputDirectory does not end in a trailing backslash, as it will mess up nuget.exe's parameter parsing.
+$OutputDirectory = $OutputDirectory.TrimEnd('\')
+
 # Specify the version number to use for the NuGet package. If not specified the version number of the assembly being packed will be used.
 $versionNumber = ""
 
