@@ -994,10 +994,28 @@ try
         $nugetPackageFilePath = $PackageFilePath
     }
 
+    # Get the Source to push the package to.
+    # If the user explicitly provided the Source to push the package to, get it.
+	$rxSourceToPushPackageTo = [regex] "(?i)((-Source|-src)\s+(?<Source>.*?)(\s+|$))"
+	$match = $rxSourceToPushPackageTo.Match($PushOptions)
+	if ($match.Success)
+	{
+        $sourceToPushPackageTo = $match.Groups["Source"].Value
+            
+        # Strip off any quotes around the address.
+        $sourceToPushPackageTo = $sourceToPushPackageTo.Trim([char[]]@("'", '"'))
+	}
+    # Else they did not provide an explicit source to push to.
+	else
+	{
+		# So assume they are pushing to the typical default source.
+        $sourceToPushPackageTo = $DEFAULT_NUGET_SOURCE_TO_PUSH_TO
+	}
+
 	# If the switch to push the package to the gallery was not provided and we are allowed to prompt, prompt the user if they want to push the package.
 	if (!$PushPackageToNuGetGallery -and !$NoPromptForPushPackageToNuGetGallery)
 	{
-		$promptMessage = "Do you want to push this package:`n'$nugetPackageFilePath'`nto the NuGet Gallery?"
+		$promptMessage = "Do you want to push this package:`n'$nugetPackageFilePath'`nto the NuGet Gallery '$sourceToPushPackageTo'?"
 		
 		# If we should prompt directly from Powershell.
 		if ($UsePowershellPrompts)
@@ -1021,24 +1039,6 @@ try
 	# If we should push the Nuget package to the gallery.
 	if ($PushPackageToNuGetGallery)
 	{
-        # Get the Source to push the package to.
-        # If the user explicitly provided the Source to push the package to, get it.
-	    $rxSourceToPushPackageTo = [regex] "(?i)((-Source|-src)\s+(?<Source>.*?)(\s+|$))"
-	    $match = $rxSourceToPushPackageTo.Match($PushOptions)
-	    if ($match.Success)
-	    {
-            $sourceToPushPackageTo = $match.Groups["Source"].Value
-            
-            # Strip off any quotes around the address.
-            $sourceToPushPackageTo = $sourceToPushPackageTo.Trim([char[]]@("'", '"'))
-	    }
-        # Else they did not provide an explicit source to push to.
-	    else
-	    {
-		    # So assume they are pushing to the typical default source.
-            $sourceToPushPackageTo = $DEFAULT_NUGET_SOURCE_TO_PUSH_TO
-	    }
-
         # If the user has not provided an API key.
         $UserProvidedApiKeyUsingPrompt = $false
         if ($PushOptions -notmatch '-ApiKey')
