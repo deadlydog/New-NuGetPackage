@@ -142,7 +142,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.1
+	Version: 1.1.1
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -165,7 +165,7 @@ param
 
 	[parameter(Position=2,Mandatory=$false,HelpMessage="The new version number to use for the NuGet Package.",ParameterSetName="PackUsingNuSpec")]
     [parameter(Position=2,Mandatory=$false,HelpMessage="The new version number to use for the NuGet Package.",ParameterSetName="PackUsingProject")]
-	[ValidatePattern('(?i)(^(\d{1,5}(\.\d{1,5}){1,3})|(\$version\$)$)')]	# This validation is duplicated in the UpdateNuSpecFile function, so update it in both places.
+	[ValidatePattern('(?i)(^(\d{1,5}(\.\d{1,5}){1,3})$)|(^(\d{1,5}\.\d{1,5}\.\d{1,5}-[a-zA-Z0-9\-\.\+]+)$)|(^(\$version\$)$)|(^$)')]	# This validation is duplicated in the UpdateNuSpecFile function, so update it in both places.
 	[Alias("Version")]
 	[Alias("V")]
 	[string] $VersionNumber,
@@ -327,7 +327,8 @@ function UpdateNuSpecFile
 		}
 		
 		# The script's parameter validation does not seem to be enforced (probably because this is inside a function), so re-enforce it here.
-		$rxVersionNumberValidation = [regex] '(?i)(^(\d{1,5}(\.\d{1,5}){1,3})|(\$version\$)$)'
+        # This validation is duplicated in the script's parameter validation, so update it in both places.
+		$rxVersionNumberValidation = [regex] '(?i)(^(\d{1,5}(\.\d{1,5}){1,3})$)|(^(\d{1,5}\.\d{1,5}\.\d{1,5}-[a-zA-Z0-9\-\.\+]+)$)|(^(\$version\$)$)|(^$)'
 		
 		# If the user cancelled the prompt or did not provide a valid version number.
 		if ([string]::IsNullOrWhiteSpace($VersionNumber) -or !$rxVersionNumberValidation.IsMatch($VersionNumber))

@@ -46,6 +46,7 @@ cd $THIS_SCRIPTS_DIRECTORY
 
 
 
+
 #Nuget spec $thisScriptsDirectory\TestProject\TestProject\TestProject.csproj -f
 #Nuget spec $thisScriptsDirectory\TestDll\TestDll.dll -f
 
