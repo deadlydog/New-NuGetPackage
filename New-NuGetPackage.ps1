@@ -142,7 +142,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.1.1
+	Version: 1.2
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
