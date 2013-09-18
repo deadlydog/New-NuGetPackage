@@ -49,6 +49,7 @@
 	.PARAMETER NoPrompt
 	If this switch is provided the user will not be prompted for the version number or release notes; the current ones in the .nuspec file will be used (if available).
 	The user will not be prompted for any other form of input either, such as if they want to push the package to a gallery, or to give input before the script exits when an error occurs.
+    This parameter should be provided when an automated mechanism is running this script (e.g. an automated build system).
 	
 	.PARAMETER NoPromptExceptOnError
 	The same as NoPrompt except if an error occurs the user will be prompted for input before the script exists, making sure they are notified that an error occurred.
@@ -142,7 +143,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.2
+	Version: 1.3
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -382,14 +383,16 @@ function UpdateNuSpecFile
 function Get-NuSpecVersionNumber([parameter(Position=1,Mandatory)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath)
 {	
 	# Read in the file contents and return the version element's value.
-	[xml]$fileContents = Get-Content -Path $NuSpecFilePath
+    $fileContents = New-Object System.Xml.XmlDocument
+    $fileContents.Load($NuSpecFilePath)
 	return Get-XmlElementsTextValue -XmlDocument $fileContents -ElementPath "package.metadata.version"
 }
 
 function Set-NuSpecVersionNumber([parameter(Position=1,Mandatory)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath, [parameter(Position=2,Mandatory)][string] $NewVersionNumber)
 {	
 	# Read in the file contents, update the version element's value, and save the file.
-	[xml]$fileContents = Get-Content -Path $NuSpecFilePath
+	$fileContents = New-Object System.Xml.XmlDocument
+    $fileContents.Load($NuSpecFilePath)
 	Set-XmlElementsTextValue -XmlDocument $fileContents -ElementPath "package.metadata.version" -TextValue $NewVersionNumber
 	$fileContents.Save($NuSpecFilePath)
 }
@@ -397,14 +400,16 @@ function Set-NuSpecVersionNumber([parameter(Position=1,Mandatory)][ValidateScrip
 function Get-NuSpecReleaseNotes([parameter(Position=1,Mandatory)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath)
 {	
 	# Read in the file contents and return the version element's value.
-	[xml]$fileContents = Get-Content -Path $NuSpecFilePath
+	$fileContents = New-Object System.Xml.XmlDocument
+    $fileContents.Load($NuSpecFilePath)
 	return Get-XmlElementsTextValue -XmlDocument $fileContents -ElementPath "package.metadata.releaseNotes"
 }
 
 function Set-NuSpecReleaseNotes([parameter(Position=1,Mandatory)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath, [parameter(Position=2)][string] $NewReleaseNotes)
 {
 	# Read in the file contents, update the version element's value, and save the file.
-	[xml]$fileContents = Get-Content -Path $NuSpecFilePath
+	$fileContents = New-Object System.Xml.XmlDocument
+    $fileContents.Load($NuSpecFilePath)
 	Set-XmlElementsTextValue -XmlDocument $fileContents -ElementPath "package.metadata.releaseNotes" -TextValue $NewReleaseNotes
 	$fileContents.Save($NuSpecFilePath)
 }
@@ -719,7 +724,7 @@ try
 		if ($NoPrompt) { $NoPromptForInputOnError = $true }
 		$NoPromptForPushPackageToNuGetGallery = $true
 		$NoPromptForReleaseNotes = $true
-		$NoPromptForVersionNumber = $true		
+		$NoPromptForVersionNumber = $true
 	}
 	
 	# If a path to a NuSpec, Project, or Package file to use was not provided, look for one in the same directory as this script or prompt for one.
@@ -1044,7 +1049,8 @@ try
         if ($PushOptions -notmatch '-ApiKey')
         {
             # Get the NuGet.config file contents as Xml.
-            [xml]$nugetConfigXml = Get-Content -Path $NUGET_CONFIG_FILE_PATH
+            $nugetConfigXml = New-Object System.Xml.XmlDocument
+            $nugetConfigXml.Load($NUGET_CONFIG_FILE_PATH)
 
             # If the user does not have an API key saved on this PC for the Source to push to, and prompts are allowed, prompt them for one.
             if (((Get-XmlNodes -XmlDocument $nugetConfigXml -NodePath "configuration.apikeys.add" | Where-Object { $_.key -eq $sourceToPushPackageTo }) -eq $null) -and !$NoPrompt)

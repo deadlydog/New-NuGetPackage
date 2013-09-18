@@ -1,4 +1,6 @@
 param($installPath, $toolsPath, $package, $project)
+
+# Get the current Post-Build Event text.
 $postBuildEventText = $project.Properties.Item(“PostBuildEvent”).Value
 
 # Define the Post-Build Event Code to remove.
