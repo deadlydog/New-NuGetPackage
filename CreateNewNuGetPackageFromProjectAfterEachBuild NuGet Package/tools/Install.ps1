@@ -1,5 +1,6 @@
 param($installPath, $toolsPath, $package, $project)
 
+# Edits the project's packages.config file to make sure the reference to the given package uses the developmentDependency="true" attribute.
 function Set-PackageToBeDevelopmentDependency($PackageId, $ProjectDirectoryPath)
 {
     function Get-XmlNamespaceManager([xml]$XmlDocument, [string]$NamespaceURI = "")
@@ -28,10 +29,11 @@ function Set-PackageToBeDevelopmentDependency($PackageId, $ProjectDirectoryPath)
 	    return $nodes
     }
 
-    # Edit the project's packages.config file to make sure the reference to this package uses the developmentDependency="true" attribute.
+    # Get the path to the project's packages.config file.
     Write-Debug "Project directory is '$ProjectDirectoryPath'."
     $packagesConfigFilePath = Join-Path $ProjectDirectoryPath "packages.config"
 
+    # If we found the packages.config file, try and update it.
     if (Test-Path -Path $packagesConfigFilePath)
     {
         Write-Debug "Found packages.config file at '$packagesConfigFilePath'."
@@ -55,6 +57,7 @@ function Set-PackageToBeDevelopmentDependency($PackageId, $ProjectDirectoryPath)
         # Save the packages.config file back now that we've changed it.
         $xmlFile.Save($packagesConfigFilePath)
     }
+    # Else we coudn't find the packages.config file for some reason, so error out.
     else
     {
         Write-Debug "Could not find packages.config file at '$packagesConfigFilePath'."
