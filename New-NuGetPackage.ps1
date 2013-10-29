@@ -234,15 +234,15 @@ $POWERSHELL_VERSION = $PSVersionTable.PSVersion.Major + ($PSVersionTable.PSVersi
 if ($REQUIRED_POWERSHELL_VERSION -gt $POWERSHELL_VERSION) { throw "PowerShell version $REQUIRED_POWERSHELL_VERSION is required for this script; You are only running version $POWERSHELL_VERSION. Please update PowerShell to at least version $REQUIRED_POWERSHELL_VERSION." }
 
 # Default the ParameterSet variables that may not have been set depending on which parameter set is being used. This is required for PowerShell v2.0 compatibility.
-if (!(Test-Path variable:NuSpecFilePath)) { $NuSpecFilePath = $null }
-if (!(Test-Path variable:ProjectFilePath)) { $ProjectFilePath = $null }
-if (!(Test-Path variable:PackageFilePath)) { $PackageFilePath = $null }
-if (!(Test-Path variable:VersionNumber)) { $VersionNumber = $null }
-if (!(Test-Path variable:ReleaseNotes)) { $ReleaseNotes = $null }
-if (!(Test-Path variable:PackOptions)) { $PackOptions = $null }
-if (!(Test-Path variable:NoPromptForVersionNumber)) { $NoPromptForVersionNumber = $false }
-if (!(Test-Path variable:NoPromptForReleaseNotes)) { $NoPromptForReleaseNotes = $false }
-if (!(Test-Path variable:DoNotUpdateNuSpecFile)) { $DoNotUpdateNuSpecFile = $false }
+if (!(Test-Path Variable:Private:NuSpecFilePath)) { $NuSpecFilePath = $null }
+if (!(Test-Path Variable:Private:ProjectFilePath)) { $ProjectFilePath = $null }
+if (!(Test-Path Variable:Private:PackageFilePath)) { $PackageFilePath = $null }
+if (!(Test-Path Variable:Private:VersionNumber)) { $VersionNumber = $null }
+if (!(Test-Path Variable:Private:ReleaseNotes)) { $ReleaseNotes = $null }
+if (!(Test-Path Variable:Private:PackOptions)) { $PackOptions = $null }
+if (!(Test-Path Variable:Private:NoPromptForVersionNumber)) { $NoPromptForVersionNumber = $false }
+if (!(Test-Path Variable:Private:NoPromptForReleaseNotes)) { $NoPromptForReleaseNotes = $false }
+if (!(Test-Path Variable:Private:DoNotUpdateNuSpecFile)) { $DoNotUpdateNuSpecFile = $false }
 
 
 #==========================================================
