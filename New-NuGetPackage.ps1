@@ -1,3 +1,4 @@
+#Requires -Version 2.0 
 <#
 	.SYNOPSIS
 	Creates a NuGet Package (.nupkg) file from the given Project or NuSpec file, and optionally uploads it to a NuGet Gallery.
@@ -227,11 +228,6 @@ param
 # 	This must come after a script's/function's param section.
 # 	Forces a function to be the first non-comment code to appear in a PowerShell Module.
 Set-StrictMode -Version Latest
-
-# Throw an exception if client is not using the minimum required PowerShell version.
-$REQUIRED_POWERSHELL_VERSION = 2.0  # The minimum Major.Minor PowerShell version that is required for the script to run.
-$POWERSHELL_VERSION = $PSVersionTable.PSVersion.Major + ($PSVersionTable.PSVersion.Minor / 10)
-if ($REQUIRED_POWERSHELL_VERSION -gt $POWERSHELL_VERSION) { throw "PowerShell version $REQUIRED_POWERSHELL_VERSION is required for this script; You are only running version $POWERSHELL_VERSION. Please update PowerShell to at least version $REQUIRED_POWERSHELL_VERSION." }
 
 # Default the ParameterSet variables that may not have been set depending on which parameter set is being used. This is required for PowerShell v2.0 compatibility.
 if (!(Test-Path Variable:Private:NuSpecFilePath)) { $NuSpecFilePath = $null }
