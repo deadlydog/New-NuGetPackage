@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.0
+	Version: 1.3.1
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -668,11 +668,17 @@ function Get-TfExecutablePath
 			$vsIdePath = "${vsCommonToolsPath}..\IDE\"
 			break
 		}
-		throw "Unable to find Visual Studio Common Tool Path in order to locate tf.exe to check file out of TFS source control."
 	}
 
-	# Get the path to tf.exe.
+	# Get the path to tf.exe, and return an empty string if the file does not exist.
 	$tfPath = "${vsIdePath}tf.exe"
+    if (!(Test-Path -Path $tfPath)) 
+    {
+        Write-Warning "Unable to find Visual Studio Common Tool Path in order to locate TF.exe, which is used to attempt to check a file out of TFS source control."
+        return ""
+    }
+
+    # Return the absolute path to tf.exe.
     $tfPath = Resolve-Path $tfPath
 	return $tfPath
 }
@@ -689,6 +695,9 @@ function Tfs-Checkout
 	)
 	
 	$tfPath = Get-TfExecutablePath
+
+    # If we couldn't find TF.exe, just return without doing anything.
+    if (StringIsNullOrWhitespace $tfPath) { return }
 	
 	# Construct the checkout command to run.
 	$tfCheckoutCommand = "& ""$tfPath"" checkout ""$Path"""

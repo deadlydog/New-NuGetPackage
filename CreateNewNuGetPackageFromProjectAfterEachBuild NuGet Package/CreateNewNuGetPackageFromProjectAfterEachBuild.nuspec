@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
-    <version>1.5.0</version>
+    <version>1.5.1</version>
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
@@ -14,7 +14,7 @@
 	This adds a PostBuildScripts folder to your project to house the PowerShell script that is called from the project's Post-Build event to create the NuGet package.
 	If it does not seem to be working, check the Output window for any errors that may have occurred.</description>
     <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
-    <releaseNotes>Updated to use latest version of New-NuGetPackage.ps1, which is now PowerShell v2.0 compatible.</releaseNotes>
+    <releaseNotes>- Fixed code to show a warning and continue if it cannot find TF.exe, instead of bailling out of script all together.</releaseNotes>
     <copyright>Daniel Schroeder 2013</copyright>
     <tags>Auto Automatic Automatically Build Pack Create New NuGet Package From Project After Each Build On PowerShell Power Shell .nupkg new nuget package NewNuGetPackage New-NuGetPackage</tags>
   </metadata>
