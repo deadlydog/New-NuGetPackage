@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.1
+	Version: 1.3.2
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -674,7 +674,7 @@ function Get-TfExecutablePath
 	$tfPath = "${vsIdePath}tf.exe"
     if (!(Test-Path -Path $tfPath)) 
     {
-        Write-Warning "Unable to find Visual Studio Common Tool Path in order to locate TF.exe, which is used to attempt to check a file out of TFS source control."
+        Write-Verbose "Unable to find Visual Studio Common Tool Path, which is used to locate TF.exe."
         return ""
     }
 
@@ -697,14 +697,18 @@ function Tfs-Checkout
 	$tfPath = Get-TfExecutablePath
 
     # If we couldn't find TF.exe, just return without doing anything.
-    if (StringIsNullOrWhitespace $tfPath) { return }
+    if (StringIsNullOrWhitespace $tfPath) 
+    {
+        Write-Verbose "Unable to locate TF.exe, so will skip attempting to check files out of TFS source control." 
+        return 
+    }
 	
 	# Construct the checkout command to run.
 	$tfCheckoutCommand = "& ""$tfPath"" checkout ""$Path"""
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
 	# Check the file out of TFS, eating any output.
-	Write-Debug "About to run command '$tfCheckoutCommand'."
+	Write-Verbose "About to run command '$tfCheckoutCommand'."
 	Invoke-Expression -Command $tfCheckoutCommand 2>&1 > $null
 }
 
@@ -993,7 +997,7 @@ try
 	    if ($PackOptions -notmatch '-OutputDirectory')
 	    {
             # Insert our Backup Output Directory into the Additional Pack Options.
-            Write-Debug "Specifying to use the default Output Directory '$backupOutputDirectory'."
+            Write-Verbose "Specifying to use the default Output Directory '$backupOutputDirectory'."
 		    $PackOptions += " -OutputDirectory ""$backupOutputDirectory"""
 
             # Make sure the Output Directory we are adding exists.
@@ -1005,7 +1009,7 @@ try
 	
 	    # Create the package.
 	    $packCommand = "& ""$NuGetExecutableFilePath"" pack ""$fileToPack"" $PackOptions"
-	    Write-Debug "About to run command '$packCommand'."
+	    Write-Verbose "About to run command '$packCommand'."
         $packOutput = [string]::Empty
 	    Invoke-Expression -Command $packCommand | Tee-Object -Variable packOutput
 	
@@ -1111,7 +1115,7 @@ try
 
         # Push the package to the gallery.
 		$pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nugetPackageFilePath"" $PushOptions"
-		Write-Debug "About to run command '$pushCommand'."
+		Write-Verbose "About to run command '$pushCommand'."
         $pushOutput = [string]::Empty
 		Invoke-Expression -Command $pushCommand | Tee-Object -Variable pushOutput
 
@@ -1131,7 +1135,7 @@ try
                     [int]$numberOfFilesInDefaultOutputDirectory = ((Get-ChildItem -Path $backupOutputDirectory -Force) | Measure-Object).Count
                     if ((Split-Path -Path $nugetPackageFilePath -Parent) -eq $backupOutputDirectory -and $numberOfFilesInDefaultOutputDirectory -eq 0)
                     {
-                        Write-Debug "Deleting empty default NuGet package directory '$backupOutputDirectory'."
+                        Write-Verbose "Deleting empty default NuGet package directory '$backupOutputDirectory'."
                         Remove-Item -Path $backupOutputDirectory -Force
                     }
                 }
@@ -1168,7 +1172,7 @@ try
 				{
 					# Save the Api key on this PC.
 		            $setApiKeyCommand = "& ""$NuGetExecutableFilePath"" setApiKey ""$apiKey"" -Source ""$sourceToPushPackageTo"""
-		            Write-Debug "About to run command '$setApiKeyCommand'."
+		            Write-Verbose "About to run command '$setApiKeyCommand'."
                     $setApiKeyOutput = [string]::Empty
 		            Invoke-Expression -Command $setApiKeyCommand | Tee-Object -Variable setApiKeyOutput
 

@@ -30,4 +30,4 @@ $releaseNotes = ""
 $additionalPackOptions = ""
 
 # Create the new NuGet package.
-& "$THIS_SCRIPTS_DIRECTORY\New-NuGetPackage.ps1" -ProjectFilePath "$ProjectFilePath" -VersionNumber $versionNumber -ReleaseNotes $releaseNotes -PackOptions "-OutputDirectory ""$OutputDirectory"" -NonInteractive $additionalPackOptions" -DoNotUpdateNuSpecFile -NoPrompt
+& "$THIS_SCRIPTS_DIRECTORY\New-NuGetPackage.ps1" -ProjectFilePath "$ProjectFilePath" -VersionNumber $versionNumber -ReleaseNotes $releaseNotes -PackOptions "-OutputDirectory ""$OutputDirectory"" -NonInteractive $additionalPackOptions" -DoNotUpdateNuSpecFile -NoPrompt 
