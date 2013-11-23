@@ -16,6 +16,10 @@
 #==========================================================
 $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
+#################################################
+# Users May Edit The Following Variables.
+#################################################
+
 # The NuGet gallery to upload to. If not provided, the DefaultPushSource in your NuGet.config file is used (typically nuget.org).
 $sourceToUploadTo = ""
 
@@ -25,6 +29,10 @@ $apiKey = ""
 # Specify any additional NuGet Pack options to pass to nuget.exe.
 # Rather than specifying the -Source or -ApiKey here, use the variables above.
 $pushOptions = ""
+
+#################################################
+# Do Not Edit Anything Past This Point (except to add the "-Verbose" flag to the end of the last line for troubleshooting purposes).
+#################################################
 
 # Add the Source and ApiKey to the Push Options if there were provided.
 if (![string]::IsNullOrWhiteSpace($sourceToUploadTo)) { $pushOptions += " -Source ""$sourceToUploadTo"" " }

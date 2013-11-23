@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.2
+	Version: 1.3.3
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -1006,14 +1006,17 @@ try
                 New-Item -Path $backupOutputDirectory -ItemType Directory > $null
             }
 	    }
-	
-	    # Create the package.
+
+	    # Create the command to use to create the package.
 	    $packCommand = "& ""$NuGetExecutableFilePath"" pack ""$fileToPack"" $PackOptions"
-	    Write-Verbose "About to run command '$packCommand'."
-        $packOutput = [string]::Empty
+		$packCommand = $packCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
+
+		# Create the package.
+		$packOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
+	    Write-Verbose "About to run Pack command '$packCommand'."
 	    Invoke-Expression -Command $packCommand | Tee-Object -Variable packOutput
 	
-	    # Get the path the Nuget Package was created to.
+	    # Get the path the NuGet Package was created to.
 	    $rxNugetPackagePath = [regex] "(?i)(Successfully created package '(?<FilePath>.*?)'.)"
 	    $match = $rxNugetPackagePath.Match($packOutput)
 	    if ($match.Success)
@@ -1113,10 +1116,13 @@ try
             }
         }
 
+		# Create the command to use to push the package to the gallery.
+	    $pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nugetPackageFilePath"" $PushOptions"
+		$pushCommand = $pushCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
+
         # Push the package to the gallery.
-		$pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nugetPackageFilePath"" $PushOptions"
-		Write-Verbose "About to run command '$pushCommand'."
-        $pushOutput = [string]::Empty
+		$pushOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
+		Write-Verbose "About to run Push command '$pushCommand'."
 		Invoke-Expression -Command $pushCommand | Tee-Object -Variable pushOutput
 
         # If the package was pushed successfully.
@@ -1154,7 +1160,7 @@ try
                 {
 					$promptMessage = "Do you want to save the API key you provided on this PC so that you don't have to enter it again next time?"
 				
-					# If we should prompt directly from Powershell.
+					# If we should prompt directly from PowerShell.
 					if ($UsePowershellPrompts)
 					{
 						$promptMessage += " (Yes|No)"
@@ -1166,14 +1172,17 @@ try
 						$answer = Read-MessageBoxDialog -Message $promptMessage -WindowTitle "Save API Key On This PC?" -Buttons YesNo -Icon Question
 					}
                 }
-					
+				
 				# If the user wants to save the API key.
 				if (($answer -is [string] -and $answer.StartsWith("Y", [System.StringComparison]::InvariantCultureIgnoreCase)) -or $answer -eq [System.Windows.Forms.DialogResult]::Yes)
 				{
-					# Save the Api key on this PC.
+					# Create the command to use to save the Api key on this PC.
 		            $setApiKeyCommand = "& ""$NuGetExecutableFilePath"" setApiKey ""$apiKey"" -Source ""$sourceToPushPackageTo"""
+					$setApiKeyCommand = $setApiKeyCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
+
+					# Save the Api key on this PC.
+					$setApiKeyOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 		            Write-Verbose "About to run command '$setApiKeyCommand'."
-                    $setApiKeyOutput = [string]::Empty
 		            Invoke-Expression -Command $setApiKeyCommand | Tee-Object -Variable setApiKeyOutput
 
                     $expectedSuccessfulNuGetSetApiKeyOutput = "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
