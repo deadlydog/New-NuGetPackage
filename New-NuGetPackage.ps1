@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.3
+	Version: 1.3.4
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -310,8 +310,19 @@ function StringIsNullOrWhitespace([string] $string)
 # Function to update the $NuSpecFilePath (.nuspec file) with the appropriate information before using it to create the NuGet package.
 function UpdateNuSpecFile
 {	
+
+    # If we dont' have a NuSpec file to update, throw an error that something went wrong.
+    if (!(Test-Path $NuSpecFilePath))
+    {
+        throw "The UpdateNuSpecFile function was called with an invalid NuSpecFilePath; this should not happen. There must be a bug in this script."
+    }
+
+    # Get the NuSpec file contents before we make any changes to it, so we can determine if we did in fact make changes to it later (and undo the checkout from TFS if we didn't).
+    $script:nuSpecFileContentsBeforeCheckout = [System.IO.File]::ReadAllText($NuSpecFilePath)
+
 	# Try and check the file out of TFS.
-	Tfs-Checkout -Path $NuSpecFilePath
+    $script:nuSpecFileWasAlreadyCheckedOut = Tfs-IsCheckedOut -Path $NuSpecFilePath
+	if (!$script:nuSpecFileWasAlreadyCheckedOut) { Tfs-Checkout -Path $NuSpecFilePath }
 	
 	# If we shouldn't update to the .nuspec file permanently, create a backup that we can restore from after.
 	if ($DoNotUpdateNuSpecFile)
@@ -351,10 +362,10 @@ function UpdateNuSpecFile
         # This validation is duplicated in the script's parameter validation, so update it in both places.
 		$rxVersionNumberValidation = [regex] '(?i)(^(\d{1,5}(\.\d{1,5}){1,3})$)|(^(\d{1,5}\.\d{1,5}\.\d{1,5}-[a-zA-Z0-9\-\.\+]+)$)|(^(\$version\$)$)|(^$)'
 		
-		# If the user cancelled the prompt or did not provide a valid version number.
+		# If the user cancelled the prompt or did not provide a valid version number, exit the script.
 		if ((StringIsNullOrWhitespace $VersionNumber) -or !$rxVersionNumberValidation.IsMatch($VersionNumber))
 		{
-			throw "A valid version number to use for the NuGet package was not provided."
+			throw "A valid version number to use for the NuGet package was not provided, so exiting script."
 		}
 	}
 	
@@ -699,12 +710,77 @@ function Tfs-Checkout
     # If we couldn't find TF.exe, just return without doing anything.
     if (StringIsNullOrWhitespace $tfPath) 
     {
-        Write-Verbose "Unable to locate TF.exe, so will skip attempting to check files out of TFS source control." 
+        Write-Verbose "Unable to locate TF.exe, so will skip attempting to check '$Path' out of TFS source control." 
         return 
     }
 	
 	# Construct the checkout command to run.
-	$tfCheckoutCommand = "& ""$tfPath"" checkout ""$Path"""
+	$tfCheckoutCommand = "& ""$tfPath"" checkout /lock:none ""$Path"""
+	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
+	
+	# Check the file out of TFS, eating any output.
+	Write-Verbose "About to run command '$tfCheckoutCommand'."
+	Invoke-Expression -Command $tfCheckoutCommand 2>&1 > $null
+}
+
+function Tfs-IsCheckedOut
+{
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory=$true, Position=0, HelpMessage="The local path to the file or folder to checkout from TFS source control.")]
+		[string]$Path,
+		
+		[switch]$Recursive
+	)
+	
+	$tfPath = Get-TfExecutablePath
+
+    # If we couldn't find TF.exe, just return without doing anything.
+    if (StringIsNullOrWhitespace $tfPath) 
+    {
+        Write-Verbose "Unable to locate TF.exe, so will skip attempting to check if '$Path' is checked out of TFS source control." 
+        return $null
+    }
+	
+	# Construct the status command to run.
+	$tfCheckoutCommand = "& ""$tfPath"" status ""$Path"""
+	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
+	
+	# Check the file out of TFS, capturing the output.
+	Write-Verbose "About to run command '$tfCheckoutCommand'."
+	$status = Invoke-Expression -Command $tfCheckoutCommand 2>&1
+
+    # Get the escaped path of the file or directory to search the status output for. If it is present, it means the file/directory is checked out.
+    $escapedPath = $Path.Replace('\', '\\')
+
+    # Return if the given Path is checked out or not.
+    if ($status -imatch $escapedPath) { return $true }
+    else { return $false }
+}
+
+function Tfs-Undo
+{
+    [CmdletBinding()]
+	param
+	(
+		[Parameter(Mandatory=$true, Position=0, HelpMessage="The local path to the file or folder to undo from TFS source control.")]
+		[string]$Path,
+		
+		[switch]$Recursive
+	)
+	
+	$tfPath = Get-TfExecutablePath
+
+    # If we couldn't find TF.exe, just return without doing anything.
+    if (StringIsNullOrWhitespace $tfPath) 
+    {
+        Write-Verbose "Unable to locate TF.exe, so will skip attempting to undo '$Path' from TFS source control." 
+        return 
+    }
+	
+	# Construct the undo command to run.
+	$tfCheckoutCommand = "& ""$tfPath"" undo ""$Path"" /noprompt"
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
 	# Check the file out of TFS, eating any output.
@@ -748,6 +824,16 @@ function Get-NuSpecsAssociatedProjectFilePath([parameter(Position=1,Mandatory=$t
 #==========================================================
 # Perform the script tasks.
 #==========================================================
+
+# Define some variables that we need to access within both the Try and Finally blocks of the script.
+$script:nuSpecFileWasAlreadyCheckedOut = $false
+$script:nuSpecFileContentsBeforeCheckout = $null
+$script:nugetExecutableWasAlreadyCheckedOut = $false
+$script:nugetExecutableFileSizeBeforeCheckout = $null	# We use the file size because the assembly version number is not updated between minor versions.
+
+# Display the time that this script started running.
+$scriptStartTime = Get-Date
+Write-Verbose "NuGet script started running at $($scriptStartTime.TimeOfDay.ToString())."
 
 try
 {
@@ -942,7 +1028,14 @@ try
     }
 
     # Try and check the NuGet executable out of TFS in case it needs to update itself.
-    if (Test-Path $NuGetExecutableFilePath) { Tfs-Checkout -Path $NuGetExecutableFilePath }
+    if (Test-Path $NuGetExecutableFilePath)
+    {
+        # Record the size of the executable before we run it, as we want to be able to detect if it auto-updated itself when we used it later.
+        $script:nugetExecutableFileSizeBeforeCheckout = (Get-Item -Path $NuGetExecutableFilePath).Length
+
+        $script:nugetExecutableWasAlreadyCheckedOut = Tfs-IsCheckedOut -Path $NuGetExecutableFilePath
+        if (!$script:nugetExecutableWasAlreadyCheckedOut) { Tfs-Checkout -Path $NuGetExecutableFilePath }
+    }
 
     # If we were not given a package file, then we need to pack something.
     if (StringIsNullOrWhitespace $PackageFilePath)
@@ -1132,7 +1225,7 @@ try
             if ($DeletePackageAfterPush -and (Test-Path $nugetPackageFilePath))
             {
                 # Delete the package.
-                Write-Host "Deleting NuGet Package '$nugetPackageFilePath'."
+                Write-Verbose "Deleting NuGet Package '$nugetPackageFilePath'."
                 Remove-Item -Path $nugetPackageFilePath -Force
 
                 # If the package was output to the default directory, and the directory is now empty, delete the default directory too.
@@ -1202,11 +1295,36 @@ try
 }
 finally
 {
-	# If we created a backup of the NuSpec file before updating it, restore the backed up version.
-	$backupNuSpecFilePath = BackupNuSpecFilePath
-	if ($DoNotUpdateNuSpecFile -and (Test-Path $backupNuSpecFilePath -PathType Leaf))
+	# If we should revert any changes we made to the NuSpec file.
+	if ($DoNotUpdateNuSpecFile)
 	{
-		Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath -Force
-		Remove-Item -Path $backupNuSpecFilePath -Force
+        # If we created a backup of the NuSpec file before updating it, restore the backed up version.
+        $backupNuSpecFilePath = BackupNuSpecFilePath
+        if (Test-Path $backupNuSpecFilePath -PathType Leaf)
+        {
+		    Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath -Force
+		    Remove-Item -Path $backupNuSpecFilePath -Force
+        }
 	}
+
+    # If we checked the NuSpec file out from TFS.
+    if ((Test-Path $NuSpecFilePath) -and !$script:nuSpecFileWasAlreadyCheckedOut)
+    {
+        # If the NuSpec file should not be updated, or the contents have not been changed, try and undo our checkout from TFS.
+        $newNuSpecFileContents = [System.IO.File]::ReadAllText($NuSpecFilePath)
+        if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents)) { Tfs-Undo -Path $NuSpecFilePath }
+    }
+
+    # If we checked out the NuGet executable from TFS.
+    if ((Test-Path $NuGetExecutableFilePath) -and !$script:nugetExecutableWasAlreadyCheckedOut)
+    {
+        # If the NuGet executable did not update itself, try and undo our checkout. 
+        $newNuGetExecutableFileSize = (Get-Item -Path $NuGetExecutableFilePath).Length
+        if ($script:nugetExecutableFileSizeBeforeCheckout -eq $newNuGetExecutableFileSize) { Tfs-Undo -Path $NuGetExecutableFilePath }
+    }
 }
+
+# Display the time that this script finished running, and how long it took to run.
+$scriptFinishTime = Get-Date
+$scriptElapsedTimeInSeconds = ($scriptFinishTime - $scriptStartTime).TotalSeconds.ToString()
+Write-Verbose "NuGet script finished running at $($scriptFinishTime.TimeOfDay.ToString()). Completed in $scriptElapsedTimeInSeconds seconds."

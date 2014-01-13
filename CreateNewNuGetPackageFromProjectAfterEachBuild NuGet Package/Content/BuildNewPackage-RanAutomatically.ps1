@@ -44,12 +44,12 @@ $additionalPackProperties = ""
 
 # Specify any additional NuGet Pack options to pass to nuget.exe.
 # Do not specify a "-Version" (use $versionNumber above), "-OutputDirectory", or "-NonInteractive", as these are already provided.
-# Do not specify any "-Properties" here; instead use the $packProperties variable below.
+# Do not specify any "-Properties" here; instead use the $additionalPackProperties variable above.
 # Do not specify "-Build", as this may result in an infinite build loop.
 $additionalPackOptions = ""
 
 #################################################
-# Do Not Edit Anything Past This Point (except to add the "-Verbose" flag to the end of the last line for troubleshooting purposes).
+# Do Not Edit Anything Past This Point.
 #################################################
 
 # Join the user's custom pack Properties with our default ones.
