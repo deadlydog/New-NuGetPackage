@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.4
+	Version: 1.3.5
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -271,6 +271,21 @@ $NUGET_CONFIG_FILE_PATH = Join-Path $env:APPDATA "NuGet\NuGet.config"
 $DEFAULT_NUGET_SOURCE_TO_PUSH_TO = "https://www.nuget.org"
 
 #==========================================================
+# Strings to look for in console app output.
+# If running in a non-english language, these strings will need to be changed to the strings returned by the console apps when running in the non-english language.
+#==========================================================
+
+# TF.exe output strings.
+$TF_EXE_NO_WORKING_FOLDER_MAPPING_ERROR_MESSAGE = 'There is no working folder mapping for'
+$TF_EXE_NO_PENDING_CHANGES_MESSAGE = 'There are no pending changes.'
+$TF_EXE_KEYWORD_IN_PENDING_CHANGES_MESSAGE = 'change\(s\)'	# Escape regular expression characters.
+
+# NuGet.exe output strings.
+$NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE = 'Successfully created package'
+$NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE = 'Your package was pushed.'
+$NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE = "The API Key '{0}' was saved for '{1}'."
+
+#==========================================================
 # Define functions used by the script.
 #==========================================================
 
@@ -321,8 +336,8 @@ function UpdateNuSpecFile
     $script:nuSpecFileContentsBeforeCheckout = [System.IO.File]::ReadAllText($NuSpecFilePath)
 
 	# Try and check the file out of TFS.
-    $script:nuSpecFileWasAlreadyCheckedOut = Tfs-IsCheckedOut -Path $NuSpecFilePath
-	if (!$script:nuSpecFileWasAlreadyCheckedOut) { Tfs-Checkout -Path $NuSpecFilePath }
+    $script:nuSpecFileWasAlreadyCheckedOut = Tfs-IsItemCheckedOut -Path $NuSpecFilePath
+	if ($script:nuSpecFileWasAlreadyCheckedOut -eq $false) { Tfs-Checkout -Path $NuSpecFilePath }
 	
 	# If we shouldn't update to the .nuspec file permanently, create a backup that we can restore from after.
 	if ($DoNotUpdateNuSpecFile)
@@ -723,7 +738,7 @@ function Tfs-Checkout
 	Invoke-Expression -Command $tfCheckoutCommand 2>&1 > $null
 }
 
-function Tfs-IsCheckedOut
+function Tfs-IsItemCheckedOut
 {
 	[CmdletBinding()]
 	param
@@ -748,15 +763,16 @@ function Tfs-IsCheckedOut
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
 	# Check the file out of TFS, capturing the output.
-	Write-Verbose "About to run command '$tfCheckoutCommand'."
-	$status = Invoke-Expression -Command $tfCheckoutCommand 2>&1
+	$status = (Invoke-Expression -Command $tfCheckoutCommand 2>&1)
 
-    # Get the escaped path of the file or directory to search the status output for. If it is present, it means the file/directory is checked out.
+    # Get the escaped path of the file or directory to search the status output for.
     $escapedPath = $Path.Replace('\', '\\')
 
-    # Return if the given Path is checked out or not.
-    if ($status -imatch $escapedPath) { return $true }
-    else { return $false }
+    # Examine the returned text to return if the given Path is checked out or not.
+    if ((StringIsNullOrWhitespace $status) -or ($status -imatch $TF_EXE_NO_WORKING_FOLDER_MAPPING_ERROR_MESSAGE)) { return $null }	# An error was returned, so likely TFS is not used for this item.
+    elseif ($status -imatch $TF_EXE_NO_PENDING_CHANGES_MESSAGE) { return $false }	# The item was found in TFS, but is not checked out.
+    elseif ($status -imatch $escapedPath -and $status -imatch $TF_EXE_KEYWORD_IN_PENDING_CHANGES_MESSAGE) { return $true }	# If the file path and "change(s)" are in the message then it means the path is checked out.
+    else { return $false }	# Else we're not sure, so return that it is not checked out.
 }
 
 function Tfs-Undo
@@ -1033,8 +1049,8 @@ try
         # Record the size of the executable before we run it, as we want to be able to detect if it auto-updated itself when we used it later.
         $script:nugetExecutableFileSizeBeforeCheckout = (Get-Item -Path $NuGetExecutableFilePath).Length
 
-        $script:nugetExecutableWasAlreadyCheckedOut = Tfs-IsCheckedOut -Path $NuGetExecutableFilePath
-        if (!$script:nugetExecutableWasAlreadyCheckedOut) { Tfs-Checkout -Path $NuGetExecutableFilePath }
+        $script:nugetExecutableWasAlreadyCheckedOut = Tfs-IsItemCheckedOut -Path $NuGetExecutableFilePath
+        if ($script:nugetExecutableWasAlreadyCheckedOut -eq $false) { Tfs-Checkout -Path $NuGetExecutableFilePath }
     }
 
     # If we were not given a package file, then we need to pack something.
@@ -1110,7 +1126,7 @@ try
 	    Invoke-Expression -Command $packCommand | Tee-Object -Variable packOutput
 	
 	    # Get the path the NuGet Package was created to.
-	    $rxNugetPackagePath = [regex] "(?i)(Successfully created package '(?<FilePath>.*?)'.)"
+	    $rxNugetPackagePath = [regex] "(?i)($NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE '(?<FilePath>.*?)'.)"
 	    $match = $rxNugetPackagePath.Match($packOutput)
 	    if ($match.Success)
 	    {
@@ -1219,7 +1235,7 @@ try
 		Invoke-Expression -Command $pushCommand | Tee-Object -Variable pushOutput
 
         # If the package was pushed successfully.
-        if ($pushOutput.EndsWith("Your package was pushed."))
+        if ($pushOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE))
         {
             # If the package should be deleted.
             if ($DeletePackageAfterPush -and (Test-Path $nugetPackageFilePath))
@@ -1278,7 +1294,7 @@ try
 		            Write-Verbose "About to run command '$setApiKeyCommand'."
 		            Invoke-Expression -Command $setApiKeyCommand | Tee-Object -Variable setApiKeyOutput
 
-                    $expectedSuccessfulNuGetSetApiKeyOutput = "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
+                    $expectedSuccessfulNuGetSetApiKeyOutput = ($NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE -f $apiKey, $sourceToPushPackageTo)	# "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
                     if ($setApiKeyOutput -ne $expectedSuccessfulNuGetSetApiKeyOutput)
                     {
                         throw "Could not determine if the API key was saved successfully. Perhaps an error occurred while setting it. Look for errors from NuGet above (in the console window)."
@@ -1295,6 +1311,8 @@ try
 }
 finally
 {
+    Write-Verbose "Performing NuGet script cleanup..."
+
 	# If we should revert any changes we made to the NuSpec file.
 	if ($DoNotUpdateNuSpecFile)
 	{
@@ -1308,7 +1326,7 @@ finally
 	}
 
     # If we checked the NuSpec file out from TFS.
-    if ((Test-Path $NuSpecFilePath) -and !$script:nuSpecFileWasAlreadyCheckedOut)
+    if ((Test-Path $NuSpecFilePath) -and ($script:nuSpecFileWasAlreadyCheckedOut -eq $false))
     {
         # If the NuSpec file should not be updated, or the contents have not been changed, try and undo our checkout from TFS.
         $newNuSpecFileContents = [System.IO.File]::ReadAllText($NuSpecFilePath)
@@ -1316,7 +1334,7 @@ finally
     }
 
     # If we checked out the NuGet executable from TFS.
-    if ((Test-Path $NuGetExecutableFilePath) -and !$script:nugetExecutableWasAlreadyCheckedOut)
+    if ((Test-Path $NuGetExecutableFilePath) -and ($script:nugetExecutableWasAlreadyCheckedOut -eq $false))
     {
         # If the NuGet executable did not update itself, try and undo our checkout. 
         $newNuGetExecutableFileSize = (Get-Item -Path $NuGetExecutableFilePath).Length

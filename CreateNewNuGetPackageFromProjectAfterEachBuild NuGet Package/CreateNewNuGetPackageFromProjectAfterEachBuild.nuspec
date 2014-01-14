@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
@@ -15,8 +15,8 @@
 	If it does not seem to be working, check the Output window for any errors that may have occurred.</description>
     <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
     <releaseNotes>Updated to use the latest New-NuGetPackage.ps1 script, which:
-- Updated script to be more TFS-friendly and undo checkouts to the NuGet.exe and .nuspec file if we checked it out and changes were not made.
-- Added a timer to show how long the script took to run.</releaseNotes>
+- Fixed bug in how I was detecting if a file was checked out in TFS or not, and updated code to not call TF.exe as many times if TFS is not being used.
+- Removed Verbose output from Tfs-IsItemCheckedOut function to reduce clutter in VS output window.</releaseNotes>
     <copyright>Daniel Schroeder 2013</copyright>
     <tags>Auto Automatic Automatically Build Pack Create New NuGet Package From Project After Each Build On PowerShell Power Shell .nupkg new nuget package NewNuGetPackage New-NuGetPackage</tags>
   </metadata>
