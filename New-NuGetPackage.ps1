@@ -1,4 +1,4 @@
-#Requires -Version 2.0 
+﻿#Requires -Version 2.0
 <#
 	.SYNOPSIS
 	Creates a NuGet Package (.nupkg) file from the given Project or NuSpec file, and optionally uploads it to a NuGet Gallery.
@@ -849,7 +849,7 @@ $script:nugetExecutableFileSizeBeforeCheckout = $null	# We use the file size bec
 
 # Display the time that this script started running.
 $scriptStartTime = Get-Date
-Write-Verbose "NuGet script started running at $($scriptStartTime.TimeOfDay.ToString())."
+Write-Verbose "New-NuGetPackage script started running at $($scriptStartTime.TimeOfDay.ToString())."
 
 try
 {
@@ -1345,4 +1345,4 @@ finally
 # Display the time that this script finished running, and how long it took to run.
 $scriptFinishTime = Get-Date
 $scriptElapsedTimeInSeconds = ($scriptFinishTime - $scriptStartTime).TotalSeconds.ToString()
-Write-Verbose "NuGet script finished running at $($scriptFinishTime.TimeOfDay.ToString()). Completed in $scriptElapsedTimeInSeconds seconds."
+Write-Verbose "New-NuGetPackage script finished running at $($scriptFinishTime.TimeOfDay.ToString()). Completed in $scriptElapsedTimeInSeconds seconds."
