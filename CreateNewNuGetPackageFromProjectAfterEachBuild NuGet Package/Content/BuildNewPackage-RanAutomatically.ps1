@@ -202,27 +202,6 @@ function Ensure-AssemblyFileExistsWhereNuGetExpectsItToBe([string]$ProjectFilePa
 				Copy-Item -Path $assemblyXmlPath -Destination $nuGetExpectedAssemblyXmlPath -Force
 			}
 			else { Write-Output "No documentation file found at '$assemblyXmlPath', so it was not copied to '$nuGetExpectedAssemblyXmlPath'." }
-
-			## Copy the Xml file, if it exists.
-			## Pull the location of the Xml file from the project file, if it exists.
-			#$projectFileDocumentationFile = $projectFilePropertyGroupForCurrentConfigurationAndPlatform.DocumentationFile
-			#if (![string]::IsNullOrEmpty($projectFileDocumentationFile))
-			#{
-			#	# If the documentation file exists, try and copy it to where NuGet.exe will expect it to be.
-			#	$assemblyXmlPath = [System.IO.Path]::ChangeExtension($assemblyPath, "xml")
-			#	$nuGetExpectedAssemblyXmlPath = Join-Path (Split-Path -Path $ProjectFilePath -Parent) $projectFileDocumentationFile
-			#	if (Test-Path $assemblyXmlPath -PathType Leaf)
-			#	{
-			#		# If the directory to hold the documentation file does not exist, create it.
-			#		$nuGetExpectedDocumentationDirectoryPath = Split-Path $nuGetExpectedAssemblyXmlPath -Parent
-			#		if (!(Test-Path $nuGetExpectedDocumentationDirectoryPath)) { New-Item -Path $nuGetExpectedDocumentationDirectoryPath -ItemType Container -Force > $null }
-					
-			#		Write-Output "Copying documentation file from '$assemblyXmlPath' to '$nuGetExpectedAssemblyXmlPath'." 
-			#		Copy-Item -Path $assemblyXmlPath -Destination $nuGetExpectedAssemblyXmlPath -Force
-			#	}
-			#	else { Write-Output "No documentation file found at '$assemblyXmlPath', so it was not copied to '$nuGetExpectedAssemblyXmlPath'." }
-			#}
-			#else { Write-Output "Could not find the DocumenationFile element in the project file that corresponds to Configuration '$Configuration' and Platform '$Platform', so no xml file was copied." }
 		}
 		else { Write-Output "The proper assembly already exists where NuGet.exe will expect it to be, so no pre-processing actions were required." }
 	}
