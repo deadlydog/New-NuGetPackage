@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.5
+	Version: 1.3.6
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -1311,27 +1311,31 @@ try
 }
 finally
 {
-    Write-Verbose "Performing NuGet script cleanup..."
+    Write-Verbose "Performing any required New-NuGetPackage script cleanup..."
 
-	# If we should revert any changes we made to the NuSpec file.
-	if ($DoNotUpdateNuSpecFile)
+	# If we have a NuSpec file path.
+	if (!(StringIsNullOrWhitespace $NuSpecFilePath))
 	{
-        # If we created a backup of the NuSpec file before updating it, restore the backed up version.
-        $backupNuSpecFilePath = BackupNuSpecFilePath
-        if (Test-Path $backupNuSpecFilePath -PathType Leaf)
-        {
-		    Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath -Force
-		    Remove-Item -Path $backupNuSpecFilePath -Force
-        }
-	}
+		# If we should revert any changes we made to the NuSpec file.
+		if ($DoNotUpdateNuSpecFile)
+		{
+			# If we created a backup of the NuSpec file before updating it, restore the backed up version.
+			$backupNuSpecFilePath = BackupNuSpecFilePath
+			if (Test-Path $backupNuSpecFilePath -PathType Leaf)
+			{
+				Copy-Item -Path $backupNuSpecFilePath -Destination $NuSpecFilePath -Force
+				Remove-Item -Path $backupNuSpecFilePath -Force
+			}
+		}
 
-    # If we checked the NuSpec file out from TFS.
-    if ((Test-Path $NuSpecFilePath) -and ($script:nuSpecFileWasAlreadyCheckedOut -eq $false))
-    {
-        # If the NuSpec file should not be updated, or the contents have not been changed, try and undo our checkout from TFS.
-        $newNuSpecFileContents = [System.IO.File]::ReadAllText($NuSpecFilePath)
-        if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents)) { Tfs-Undo -Path $NuSpecFilePath }
-    }
+		# If we checked the NuSpec file out from TFS.
+		if ((Test-Path $NuSpecFilePath) -and ($script:nuSpecFileWasAlreadyCheckedOut -eq $false))
+		{
+			# If the NuSpec file should not be updated, or the contents have not been changed, try and undo our checkout from TFS.
+			$newNuSpecFileContents = [System.IO.File]::ReadAllText($NuSpecFilePath)
+			if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents)) { Tfs-Undo -Path $NuSpecFilePath }
+		}
+	}
 
     # If we checked out the NuGet executable from TFS.
     if ((Test-Path $NuGetExecutableFilePath) -and ($script:nugetExecutableWasAlreadyCheckedOut -eq $false))
