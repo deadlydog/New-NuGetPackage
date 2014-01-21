@@ -144,7 +144,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.7
+	Version: 1.3.8
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -844,8 +844,6 @@ function Get-NuSpecsAssociatedProjectFilePath([parameter(Position=1,Mandatory=$t
 # Define some variables that we need to access within both the Try and Finally blocks of the script.
 $script:nuSpecFileWasAlreadyCheckedOut = $false
 $script:nuSpecFileContentsBeforeCheckout = $null
-$script:nugetExecutableWasAlreadyCheckedOut = $false
-$script:nugetExecutableFileSizeBeforeCheckout = $null	# We use the file size because the assembly version number is not updated between minor versions.
 
 # Display the time that this script started running.
 $scriptStartTime = Get-Date
@@ -1041,16 +1039,6 @@ try
         {
             $NuGetExecutableFilePath = "NuGet.exe"
         }
-    }
-
-    # Try and check the NuGet executable out of TFS in case it needs to update itself.
-    if (Test-Path $NuGetExecutableFilePath)
-    {
-        # Record the size of the executable before we run it, as we want to be able to detect if it auto-updated itself when we used it later.
-        $script:nugetExecutableFileSizeBeforeCheckout = (Get-Item -Path $NuGetExecutableFilePath).Length
-
-        $script:nugetExecutableWasAlreadyCheckedOut = Tfs-IsItemCheckedOut -Path $NuGetExecutableFilePath
-        if ($script:nugetExecutableWasAlreadyCheckedOut -eq $false) { Tfs-Checkout -Path $NuGetExecutableFilePath }
     }
 
     # If we were not given a package file, then we need to pack something.
@@ -1336,14 +1324,6 @@ finally
 			if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents)) { Tfs-Undo -Path $NuSpecFilePath }
 		}
 	}
-
-    # If we checked out the NuGet executable from TFS.
-    if (!(String-IsNullOrWhitespace $NuGetExecutableFilePath) -and (Test-Path $NuGetExecutableFilePath) -and ($script:nugetExecutableWasAlreadyCheckedOut -eq $false))
-    {
-        # If the NuGet executable did not update itself, try and undo our checkout. 
-        $newNuGetExecutableFileSize = (Get-Item -Path $NuGetExecutableFilePath).Length
-        if ($script:nugetExecutableFileSizeBeforeCheckout -eq $newNuGetExecutableFileSize) { Tfs-Undo -Path $NuGetExecutableFilePath }
-    }
 }
 
 # Display the time that this script finished running, and how long it took to run.
