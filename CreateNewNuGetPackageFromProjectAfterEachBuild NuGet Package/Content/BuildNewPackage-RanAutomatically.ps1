@@ -22,10 +22,6 @@ Set-StrictMode -Version Latest
 # Get the directory that this script is in.
 $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
-# The Configuration and Platform get passed in the format "Key=Value", so strip off the Key since we only want the Value.
-$Configuration = $Configuration -ireplace ".*?=", ""
-$Platform = $Platform -ireplace ".*?=", ""
-
 # Make sure the OutputDirectory does not end in a trailing backslash, as it will mess up nuget.exe's parameter parsing.
 $OutputDirectory = $OutputDirectory.TrimEnd('\')
 

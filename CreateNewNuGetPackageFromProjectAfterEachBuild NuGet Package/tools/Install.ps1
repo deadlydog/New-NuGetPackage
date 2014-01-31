@@ -81,7 +81,7 @@ if ($postBuildEventText -match "New-NuGetPackage.ps1")
 $postBuildEventCode = @'
 REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
 ECHO Building NuGet package in Post-Build event...
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuildScripts\BuildNewPackage-RanAutomatically.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -Configuration='$(ConfigurationName)' -Platform='$(PlatformName)'"
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuildScripts\BuildNewPackage-RanAutomatically.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -Configuration '$(ConfigurationName)' -Platform '$(PlatformName)'"
 '@
 
 # Add the Post-Build Event Code to the project and save it (prepend a couple newlines in case there is existing Post Build Event text).

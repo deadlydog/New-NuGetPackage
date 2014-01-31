@@ -81,6 +81,10 @@
 	The full path to NuGet.exe.
 	If not provided it is assumed that NuGet.exe is in the same directory as this script, or that NuGet.exe has been added to your PATH and can be called directly from the command prompt.
 
+	.PARAMETER UpdateNuGetExecutable
+	If this switch is provided "NuGet.exe update -self" will be performed before packing or pushing anything.
+	Provide this switch to ensure your NuGet executable is always up-to-date on the latest version.
+
 	.EXAMPLE
 	& .\New-NuGetPackage.ps1
 
@@ -134,7 +138,7 @@
     User will be prompted to confirm that they want to push the package; to avoid this prompt supply the -PushPackageToNuGetGallery switch.
 
 	.EXAMPLE
-	& .\New-NuGetPackage.ps1 -NoPromptForInputOnError
+	& .\New-NuGetPackage.ps1 -NoPromptForInputOnError -UpdateNuGetExecutable
 
 	Create a new package or push an existing package by auto-finding the .nuspec, project, or .nupkg file to use, and prompting for one if none are found.
 	Will not prompt the user for input before exitting the script when an error occurs.
@@ -144,7 +148,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.3.8
+	Version: 1.4.0
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -221,7 +225,10 @@ param
 	[switch] $DoNotUpdateNuSpecFile,
 	
 	[Alias("NuGet")]
-	[string] $NuGetExecutableFilePath
+	[string] $NuGetExecutableFilePath,
+	
+	[Alias("UNE")]
+	[switch] $UpdateNuGetExecutable
 )
 
 # Turn on Strict Mode to help catch syntax-related errors.
@@ -284,6 +291,7 @@ $TF_EXE_KEYWORD_IN_PENDING_CHANGES_MESSAGE = 'change\(s\)'	# Escape regular expr
 $NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE = 'Successfully created package'
 $NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE = 'Your package was pushed.'
 $NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE = "The API Key '{0}' was saved for '{1}'."
+$NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION = "Update successful."
 
 #==========================================================
 # Define functions used by the script.
@@ -1029,16 +1037,42 @@ try
     if (String-IsNullOrWhitespace $NuGetExecutableFilePath)
     {
         # If the NuGet executable is in the same directory as this script, use it.
-        $nugetExecutablePathInThisDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY "NuGet.exe"
-        if (Test-Path $nugetExecutablePathInThisDirectory)
+        $nuGetExecutablePathInThisDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY "NuGet.exe"
+        if (Test-Path $nuGetExecutablePathInThisDirectory)
         {
-            $NuGetExecutableFilePath = $nugetExecutablePathInThisDirectory
+            $NuGetExecutableFilePath = $nuGetExecutablePathInThisDirectory
         }
         # Else we don't know where the executable is, so assume it has been added to the PATH.
         else
         {
             $NuGetExecutableFilePath = "NuGet.exe"
         }
+    }
+	
+	# If we should try and update the NuGet executable.
+    if ($UpdateNuGetExecutable)
+    {
+		# If we have the path to the NuGet executable, try and check it out of TFS before having it update itself.
+		if (Test-Path $NuGetExecutableFilePath)
+		{
+			# Try and check the NuGet executable out of TFS if needed.
+	        $nuGetExecutableWasAlreadyCheckedOut = Tfs-IsItemCheckedOut -Path $NuGetExecutableFilePath
+	        if ($nuGetExecutableWasAlreadyCheckedOut -eq $false) { Tfs-Checkout -Path $NuGetExecutableFilePath }
+		}
+		
+		# Create the command to use to update NuGet.exe.
+	    $updateCommand = "& ""$NuGetExecutableFilePath"" update -self"
+
+		# Have the NuGet executable try and auto-update itself.
+		$updateOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
+	    Write-Verbose "About to run Update command '$updateCommand'."
+	    Invoke-Expression -Command $updateCommand | Tee-Object -Variable updateOutput
+		
+		# If we have the path to the NuGet executable, we checked it out of TFS, and it did not auto-update itself, then undo the changes from TFS.
+		if ((Test-Path $NuGetExecutableFilePath) -and ($nuGetExecutableWasAlreadyCheckedOut -eq $false) -and !$updateOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION))
+		{
+			Tfs-Undo -Path $NuGetExecutableFilePath
+		}
     }
 
     # If we were not given a package file, then we need to pack something.
@@ -1118,7 +1152,7 @@ try
 	    $match = $rxNugetPackagePath.Match($packOutput)
 	    if ($match.Success)
 	    {
-		    $nugetPackageFilePath = $match.Groups["FilePath"].Value
+		    $nuGetPackageFilePath = $match.Groups["FilePath"].Value
 	    }
 	    else
 	    {
@@ -1129,7 +1163,7 @@ try
     else
     {
         # Save the Package file path to push.
-        $nugetPackageFilePath = $PackageFilePath
+        $nuGetPackageFilePath = $PackageFilePath
     }
 
     # Get the Source to push the package to.
@@ -1153,7 +1187,7 @@ try
 	# If the switch to push the package to the gallery was not provided and we are allowed to prompt, prompt the user if they want to push the package.
 	if (!$PushPackageToNuGetGallery -and !$NoPromptForPushPackageToNuGetGallery)
 	{
-		$promptMessage = "Do you want to push this package:`n'$nugetPackageFilePath'`nto the NuGet Gallery '$sourceToPushPackageTo'?"
+		$promptMessage = "Do you want to push this package:`n'$nuGetPackageFilePath'`nto the NuGet Gallery '$sourceToPushPackageTo'?"
 		
 		# If we should prompt directly from Powershell.
 		if ($UsePowershellPrompts)
@@ -1182,11 +1216,11 @@ try
         if ($PushOptions -notmatch '-ApiKey')
         {
             # Get the NuGet.config file contents as Xml.
-            $nugetConfigXml = New-Object System.Xml.XmlDocument
-            $nugetConfigXml.Load($NUGET_CONFIG_FILE_PATH)
+            $nuGetConfigXml = New-Object System.Xml.XmlDocument
+            $nuGetConfigXml.Load($NUGET_CONFIG_FILE_PATH)
 
             # If the user does not have an API key saved on this PC for the Source to push to, and prompts are allowed, prompt them for one.
-            if (((Get-XmlNodes -XmlDocument $nugetConfigXml -NodePath "configuration.apikeys.add" | Where-Object { $_.key -eq $sourceToPushPackageTo }) -eq $null) -and !$NoPrompt)
+            if (((Get-XmlNodes -XmlDocument $nuGetConfigXml -NodePath "configuration.apikeys.add" | Where-Object { $_.key -eq $sourceToPushPackageTo }) -eq $null) -and !$NoPrompt)
             {
                 $promptMessage = "It appears that you do not have an API key saved on this PC for the source to push the package to '$sourceToPushPackageTo'.`n`nYou must provide an API key to push this package to the NuGet Gallery.`n`nPlease enter your API key"
 		
@@ -1214,7 +1248,7 @@ try
         }
 
 		# Create the command to use to push the package to the gallery.
-	    $pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nugetPackageFilePath"" $PushOptions"
+	    $pushCommand = "& ""$NuGetExecutableFilePath"" push ""$nuGetPackageFilePath"" $PushOptions"
 		$pushCommand = $pushCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
 
         # Push the package to the gallery.
@@ -1226,17 +1260,17 @@ try
         if ($pushOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE))
         {
             # If the package should be deleted.
-            if ($DeletePackageAfterPush -and (Test-Path $nugetPackageFilePath))
+            if ($DeletePackageAfterPush -and (Test-Path $nuGetPackageFilePath))
             {
                 # Delete the package.
-                Write-Verbose "Deleting NuGet Package '$nugetPackageFilePath'."
-                Remove-Item -Path $nugetPackageFilePath -Force
+                Write-Verbose "Deleting NuGet Package '$nuGetPackageFilePath'."
+                Remove-Item -Path $nuGetPackageFilePath -Force
 
                 # If the package was output to the default directory, and the directory is now empty, delete the default directory too.
                 if (Test-Path $backupOutputDirectory)
                 {
                     [int]$numberOfFilesInDefaultOutputDirectory = ((Get-ChildItem -Path $backupOutputDirectory -Force) | Measure-Object).Count
-                    if ((Split-Path -Path $nugetPackageFilePath -Parent) -eq $backupOutputDirectory -and $numberOfFilesInDefaultOutputDirectory -eq 0)
+                    if ((Split-Path -Path $nuGetPackageFilePath -Parent) -eq $backupOutputDirectory -and $numberOfFilesInDefaultOutputDirectory -eq 0)
                     {
                         Write-Verbose "Deleting empty default NuGet package directory '$backupOutputDirectory'."
                         Remove-Item -Path $backupOutputDirectory -Force
