@@ -36,13 +36,15 @@ cd $THIS_SCRIPTS_DIRECTORY
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -PackOptions "-Build -OutputDirectory ""$THIS_SCRIPTS_DIRECTORY""" -DoNotUpdateNuSpecFile
 
 # Test packing by specifying a custom NuGet.exe path with spaces.
-#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.2" -ReleaseNotes "Pack project without building and specify version 1.2" -NuGetExecutableFilePath "C:\dev\TFS\RQ\Dev\Tools\DevOps\New-NuGetPackage\Tests\NuGet Executable\NuGet.exe"
+#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.2" -ReleaseNotes "Pack project without building and specify version 1.2" -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY\NuGet Executable\NuGet.exe"
 
 # Test packing from a relative path.
 #.\..\New-NuGetPackage.ps1 -NuSpecFilePath ".\Test NuSpec File\StaticNuSpecFileTest.nuspec" -DoNotUpdateNuSpecFile
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath ".\Test Project\TestProject\TestProject.csproj" -DoNotUpdateNuSpecFile
 
-
+# Test the NuGet Update switch.
+#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.3" -ReleaseNotes "Pack project without building and specify version 1.3 and do NOT update the NuGet.exe" -NoPromptForPushPackageToNuGetGallery -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY\Older Version NuGet Executable\NuGet.exe" -Verbose
+#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.3" -ReleaseNotes "Pack project without building and specify version 1.3 and update the NuGet.exe" -NoPromptForPushPackageToNuGetGallery -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY\Older Version NuGet Executable\NuGet.exe" -UpdateNuGetExecutable -Verbose
 
 
 
