@@ -148,7 +148,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.4.0
+	Version: 1.4.1
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -691,7 +691,7 @@ function Get-TfExecutablePath
 {	
 	# Get the latest visual studio IDE path.
 	$vsIdePath = "" 
-	$vsCommonToolsPaths = @($env:VS110COMNTOOLS,$env:VS100COMNTOOLS)
+	$vsCommonToolsPaths = @($env:VS120COMNTOOLS,$env:VS110COMNTOOLS,$env:VS100COMNTOOLS)
 	$vsCommonToolsPaths = @($VsCommonToolsPaths | Where-Object {$_ -ne $null})
 		
 	# Loop through each version from largest to smallest.
