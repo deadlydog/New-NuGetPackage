@@ -148,7 +148,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.4.1
+	Version: 1.4.2
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -332,8 +332,7 @@ function String-IsNullOrWhitespace([string] $string)
 
 # Function to update the $NuSpecFilePath (.nuspec file) with the appropriate information before using it to create the NuGet package.
 function Update-NuSpecFile
-{	
-
+{
     # If we dont' have a NuSpec file to update, throw an error that something went wrong.
     if (!(Test-Path $NuSpecFilePath))
     {
@@ -353,12 +352,12 @@ function Update-NuSpecFile
 		Copy-Item -Path $NuSpecFilePath -Destination (Get-NuSpecBackupFilePath) -Force
 	}
 
+	# Get the current version number from the .nuspec file.
+	$currentVersionNumber = Get-NuSpecVersionNumber -NuSpecFilePath $NuSpecFilePath
+
 	# If an explicit Version Number was not provided, prompt for it.
 	if (String-IsNullOrWhitespace $VersionNumber)
 	{
-		# Get the current version number from the .nuspec file.
-		$currentVersionNumber = Get-NuSpecVersionNumber -NuSpecFilePath $NuSpecFilePath
-
 		# If we shouldn't prompt for a version number, just use the existing one from the NuSpec file (if it exists).
 		if ($NoPromptForVersionNumber)
 		{
@@ -392,15 +391,18 @@ function Update-NuSpecFile
 		}
 	}
 	
-	# Insert the given version number into the .nuspec file.
-	Set-NuSpecVersionNumber -NuSpecFilePath $NuSpecFilePath -NewVersionNumber $VersionNumber
+	# Insert the given version number into the .nuspec file, if it is different.
+	if ($currentVersionNumber -ne $VersionNumber)
+	{
+		Set-NuSpecVersionNumber -NuSpecFilePath $NuSpecFilePath -NewVersionNumber $VersionNumber
+	}
+	
+	# Get the current release notes from the .nuspec file.
+	$currentReleaseNotes = Get-NuSpecReleaseNotes -NuSpecFilePath $NuSpecFilePath
 	
 	# If the Release Notes were not provided, prompt for them.
 	if (String-IsNullOrWhitespace $ReleaseNotes)
-	{
-		# Get the current release notes from the .nuspec file.
-		$currentReleaseNotes = Get-NuSpecReleaseNotes -NuSpecFilePath $NuSpecFilePath
-		
+	{		
 		# If we shouldn't prompt for the release notes, just use the existing ones from the NuSpec file (if it exists).
 		if ($NoPromptForReleaseNotes)
 		{
@@ -430,8 +432,11 @@ function Update-NuSpecFile
 		throw "User cancelled the Release Notes prompt, so exiting script."
 	}
 
-	# Insert the given Release Notes into the .nuspec file if some were provided.
-	Set-NuSpecReleaseNotes -NuSpecFilePath $NuSpecFilePath -NewReleaseNotes $ReleaseNotes
+	# Insert the given Release Notes into the .nuspec file if some were provided, and they are different than the current ones.
+	if ($currentReleaseNotes -ne $ReleaseNotes)
+	{
+		Set-NuSpecReleaseNotes -NuSpecFilePath $NuSpecFilePath -NewReleaseNotes $ReleaseNotes
+	}
 }
 
 function Get-NuSpecVersionNumber([parameter(Position=1,Mandatory=$true)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath)
