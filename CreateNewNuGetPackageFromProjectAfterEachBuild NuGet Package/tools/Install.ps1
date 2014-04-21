@@ -1,4 +1,4 @@
-param($installPath, $toolsPath, $package, $project)
+ï»¿param($installPath, $toolsPath, $package, $project)
 
 # Edits the project's packages.config file to make sure the reference to the given package uses the developmentDependency="true" attribute.
 function Set-PackageToBeDevelopmentDependency($PackageId, $ProjectDirectoryPath)
@@ -68,7 +68,7 @@ function Set-PackageToBeDevelopmentDependency($PackageId, $ProjectDirectoryPath)
 Set-PackageToBeDevelopmentDependency -PackageId $package.Id -ProjectDirectoryPath ([System.IO.Directory]::GetParent($project.FullName))
 
 # Get the current Post-Build Event text.
-$postBuildEventText = $project.Properties.Item(“PostBuildEvent”).Value
+$postBuildEventText = $project.Properties.Item("PostBuildEvent").Value
 
 # If there is already a call to the powershell script in the post build event, then just exit.
 if ($postBuildEventText -match "New-NuGetPackage.ps1")
@@ -80,11 +80,12 @@ if ($postBuildEventText -match "New-NuGetPackage.ps1")
 # Define the Post-Build Event Code to add.
 $postBuildEventCode = @'
 REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
+REM If you see this in Visual Studio's Error List window, check the Output window's Build tab for the actual error.
 ECHO Building NuGet package in Post-Build event...
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuildScripts\BuildNewPackage-RanAutomatically.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -Configuration '$(ConfigurationName)' -Platform '$(PlatformName)'"
 '@
 
 # Add the Post-Build Event Code to the project and save it (prepend a couple newlines in case there is existing Post Build Event text).
 $postBuildEventText += "`n`r`n`r$postBuildEventCode"
-$project.Properties.Item(“PostBuildEvent”).Value = $postBuildEventText.Trim()
+$project.Properties.Item("PostBuildEvent").Value = $postBuildEventText.Trim()
 $project.Save()
