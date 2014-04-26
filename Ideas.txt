@@ -1,0 +1,1 @@
+- Store the output from all of the Invoke-Expression commands used to call NuGet.exe in an -OutVariable, and use Write-Verbose to only write it if Verbose mode is on. The only thing that the script should return when not in Verbose mode is the path to the .nupkg file.
