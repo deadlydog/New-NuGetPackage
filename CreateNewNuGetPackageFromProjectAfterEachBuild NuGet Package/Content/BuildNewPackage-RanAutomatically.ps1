@@ -29,7 +29,9 @@ $OutputDirectory = $OutputDirectory.TrimEnd('\')
 # Users May Edit The Following Variables.
 #################################################
 
-# Specify the version number to use for the NuGet package. If not specified the version number of the assembly being packed will be used.
+# Specify the version number to use for the NuGet package. If not specified, the version number of the assembly being packed will be used.
+# NuGet version number guidance: https://docs.nuget.org/docs/reference/versioning and the Semantic Versioning spec: http://semver.org/
+# e.g. "" (use assembly's version), "1.2.3" (stable version), "1.2.3-alpha" (prerelease version).
 $versionNumber = ""
 
 # Specify any release notes for this package. 

@@ -12,6 +12,6 @@ PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuil
 '@
 
 # Remove the Post-Build Event Code to the project and save it.
-$postBuildEventText = $postBuildEventText.Replace($postBuildEventCode, "")
+$postBuildEventText = $postBuildEventText.Replace($postBuildEventCode, [string]::Empty)
 $project.Properties.Item("PostBuildEvent").Value = $postBuildEventText.Trim()
 $project.Save()
