@@ -3,6 +3,22 @@
 # Get the current Post-Build Event text.
 $postBuildEventText = $project.Properties.Item("PostBuildEvent").Value
 
+###### Start of code to remove older versions of post build event text.
+$oldPostBuildEventCode = @'
+REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
+ECHO Building NuGet package in Post-Build event...
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuildScripts\BuildNewPackage-RanAutomatically.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -Configuration '$(ConfigurationName)' -Platform '$(PlatformName)'"
+'@
+$postBuildEventText = $postBuildEventText.Replace($oldPostBuildEventCode, [string]::Empty)
+
+$oldPostBuildEventCode = @'
+REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
+ECHO Building NuGet package in Post-Build event...
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$(ProjectDir)PostBuildScripts\BuildNewPackage-RanAutomatically.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -Configuration='$(ConfigurationName)' -Platform='$(PlatformName)'"
+'@
+$postBuildEventText = $postBuildEventText.Replace($oldPostBuildEventCode, [string]::Empty)
+###### End of code to remove older versions of post build event text.
+
 # Define the Post-Build Event Code to remove.
 $postBuildEventCode = @'
 REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
