@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>StaticNuSpecFileTest</id>
+    <version>2.0.0</version>
+    <title>StaticNuSpecFileTest</title>
+    <authors>iQmetrix</authors>
+    <owners>Dan Schroeder</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>StaticNuSpecFileTest Description.</description>
+    <summary>StaticNuSpecFileTest Summary.</summary>
+    <tags>Powershell</tags>
+    <releaseNotes>Pack nuspec file with version number and release notes specified</releaseNotes>
+  </metadata>
+  <files>
+    <file src="dummy.txt" target="content\dummy.txt" />
+  </files>
+</package>

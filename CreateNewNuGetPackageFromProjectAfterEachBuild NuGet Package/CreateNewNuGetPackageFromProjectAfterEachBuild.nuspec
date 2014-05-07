@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
-    <version>1.7.4-PreRelease</version>
+    <version>1.8</version>
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
@@ -16,7 +16,8 @@
     <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
     <releaseNotes>- Fixed bug where Post-Build Event code would not be removed on uninstall.
 - Changes to make localization easier.
-- Added Post-Build Event comment to make it clearer where to find error messages.</releaseNotes>
+- Added Post-Build Event comment to make it clearer where to find error messages.
+- Using latest version of New-NuGetPackage.ps1 script (v1.5.0)</releaseNotes>
     <copyright>Daniel Schroeder 2013</copyright>
     <tags>Auto Automatic Automatically Build Pack Create New NuGet Package From Project After Each Build On PowerShell Power Shell .nupkg new nuget package NewNuGetPackage New-NuGetPackage</tags>
   </metadata>

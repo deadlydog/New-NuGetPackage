@@ -1,4 +1,4 @@
-# Turn on Strict Mode to help catch syntax-related errors.
+﻿# Turn on Strict Mode to help catch syntax-related errors.
 # 	This must come after a script's/function's param section.
 # 	Forces a function to be the first non-comment code to appear in a PowerShell Module.
 Set-StrictMode -Version Latest
@@ -7,6 +7,9 @@ Set-StrictMode -Version Latest
 $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
 cd $THIS_SCRIPTS_DIRECTORY
+
+# Clear the screen
+Clear-Host
 
 # Test packing from a project with a NuSpec file.
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project\TestProject\TestProject.csproj" -PackOptions "-Build -OutputDirectory ""$THIS_SCRIPTS_DIRECTORY""" -Verbose
@@ -18,6 +21,10 @@ cd $THIS_SCRIPTS_DIRECTORY
 # Test packing from a nuspec file.
 #.\..\New-NuGetPackage.ps1 -NuSpecFilePath "$THIS_SCRIPTS_DIRECTORY\Test NuSpec File\StaticNuSpecFileTest.nuspec"
 #.\..\New-NuGetPackage.ps1 -NuSpecFilePath "$THIS_SCRIPTS_DIRECTORY\Test NuSpec File\StaticNuSpecFileTest.nuspec" -VersionNumber "1.0.0" -ReleaseNotes "Pack nuspec file with version number and release notes specified"
+
+# Test errors to see how they look.
+.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project With Errors So It Will Not Pack\ProjectWithErrorsSoItWillNotPack\ProjectWithErrorsSoItWillNotPack.csproj" -PackOptions "-Build"
+#.\..\New-NuGetPackage.ps1 -NuSpecFilePath "$THIS_SCRIPTS_DIRECTORY\Test NuSpec With Errors So It Will Not Pack\NuSpecFileWithErrorsTest.nuspec" -NoPrompt
 
 # Test packing without specifying a file path or any other parameters.
 #.\..\New-NuGetPackage.ps1
