@@ -93,10 +93,11 @@
 	This assumes that you are currently in the same directory as the New-NuGetPackage.ps1 script, since a relative path is supplied.
 
 	.EXAMPLE
-	& "C:\Some Folder\New-NuGetPackage.ps1" -NuSpecFilePath ".\Some Folder\SomeNuSpecFile.nuspec"
+	& "C:\Some Folder\New-NuGetPackage.ps1" -NuSpecFilePath ".\Some Folder\SomeNuSpecFile.nuspec" -Verbose
 
 	Create a new package from the SomeNuSpecFile.nuspec file.
 	This can be ran from any directory since an absolute path to the New-NuGetPackage.ps1 script is supplied.
+	Additional information will be displayed about the operations being performed because the -Verbose switch was supplied.
 	
 	.EXAMPLE
 	& .\New-NuGetPackage.ps1 -ProjectFilePath "C:\Some Folder\TestProject.csproj" -VersionNumber "1.1" -ReleaseNotes "Version 1.1 contains many bug fixes."
@@ -1071,7 +1072,11 @@ try
 		# Have the NuGet executable try and auto-update itself.
 		$updateOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 	    Write-Verbose "About to run Update command '$updateCommand'."
-	    Invoke-Expression -Command $updateCommand | Tee-Object -Variable updateOutput
+	    Invoke-Expression -Command $updateCommand -OutVariable updateOutput > $null
+		
+		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
+		$updateOutput = $($updateOutput -join [Environment]::NewLine)
+		Write-Verbose $updateOutput
 		
 		# If we have the path to the NuGet executable, we checked it out of TFS, and it did not auto-update itself, then undo the changes from TFS.
 		if ((Test-Path $NuGetExecutableFilePath) -and ($nuGetExecutableWasAlreadyCheckedOut -eq $false) -and !$updateOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION))
@@ -1150,13 +1155,18 @@ try
 		# Create the package.
 		$packOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 	    Write-Verbose "About to run Pack command '$packCommand'."
-	    Invoke-Expression -Command $packCommand | Tee-Object -Variable packOutput
+	    Invoke-Expression -Command $packCommand -OutVariable packOutput > $null
 	
-	    # Get the path the NuGet Package was created to.
+		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
+		$packOutput = $($packOutput -join [Environment]::NewLine)
+		Write-Verbose $packOutput
+	
+	    # Get the path the NuGet Package was created to, and write it to the output stream.
 	    $match = $NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE_REGEX.Match($packOutput)
 	    if ($match.Success)
 	    {
 		    $nuGetPackageFilePath = $match.Groups["FilePath"].Value
+			Write-Output $nuGetPackageFilePath
 	    }
 	    else
 	    {
@@ -1258,7 +1268,11 @@ try
         # Push the package to the gallery.
 		$pushOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 		Write-Verbose "About to run Push command '$pushCommand'."
-		Invoke-Expression -Command $pushCommand | Tee-Object -Variable pushOutput
+		Invoke-Expression -Command $pushCommand -OutVariable pushOutput > $null
+		
+		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
+		$pushOutput = $($pushOutput -join [Environment]::NewLine)
+		Write-Verbose $pushOutput
 
         # If the package was pushed successfully.
         if ($pushOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE))
@@ -1318,7 +1332,11 @@ try
 					# Save the Api key on this PC.
 					$setApiKeyOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 		            Write-Verbose "About to run command '$setApiKeyCommand'."
-		            Invoke-Expression -Command $setApiKeyCommand | Tee-Object -Variable setApiKeyOutput
+		            Invoke-Expression -Command $setApiKeyCommand -OutVariable setApiKeyOutput
+					
+					# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
+					$setApiKeyOutput = $($setApiKeyOutput -join [Environment]::NewLine)
+					Write-Verbose $setApiKeyOutput
 
                     $expectedSuccessfulNuGetSetApiKeyOutput = ($NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE -f $apiKey, $sourceToPushPackageTo)	# "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
                     if ($setApiKeyOutput -ne $expectedSuccessfulNuGetSetApiKeyOutput)
