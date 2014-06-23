@@ -23,7 +23,7 @@ Clear-Host
 #.\..\New-NuGetPackage.ps1 -NuSpecFilePath "$THIS_SCRIPTS_DIRECTORY\Test NuSpec File\StaticNuSpecFileTest.nuspec" -VersionNumber "1.0.0" -ReleaseNotes "Pack nuspec file with version number and release notes specified"
 
 # Test errors to see how they look.
-.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project With Errors So It Will Not Pack\ProjectWithErrorsSoItWillNotPack\ProjectWithErrorsSoItWillNotPack.csproj" -PackOptions "-Build"
+#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY\Test Project With Errors So It Will Not Pack\ProjectWithErrorsSoItWillNotPack\ProjectWithErrorsSoItWillNotPack.csproj" -PackOptions "-Build"
 #.\..\New-NuGetPackage.ps1 -NuSpecFilePath "$THIS_SCRIPTS_DIRECTORY\Test NuSpec With Errors So It Will Not Pack\NuSpecFileWithErrorsTest.nuspec" -NoPrompt
 
 # Test packing without specifying a file path or any other parameters.
