@@ -868,6 +868,9 @@ $script:nuSpecFileContentsBeforeCheckout = $null
 $scriptStartTime = Get-Date
 Write-Verbose "New-NuGetPackage script started running at $($scriptStartTime.TimeOfDay.ToString())."
 
+# Display the version of PowerShell being used to run the script, as this can help solve some problems that are hard to reproduce on other machines.
+Write-Verbose "Using PowerShell Version: $($PSVersionTable.PSVersion.ToString())."
+
 try
 {
 	# If we should not show any prompts, disable them all.
@@ -1089,6 +1092,10 @@ try
 			Tfs-Undo -Path $NuGetExecutableFilePath
 		}
     }
+	
+	# Get and display the version of NuGet.exe that will be used.
+	$nuGetVersionString = (& $NuGetExecutableFilePath)[0]	# The first line of the NuGet help info contains the version number.
+	Write-Verbose "Using $($nuGetVersionString)."
 
     # If we were not given a package file, then we need to pack something.
     if (String-IsNullOrWhitespace $PackageFilePath)

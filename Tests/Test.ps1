@@ -8,7 +8,7 @@ $THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
 
 cd $THIS_SCRIPTS_DIRECTORY
 
-# Clear the screen
+# Clear the screen.
 Clear-Host
 
 # Test packing from a project with a NuSpec file.
