@@ -339,11 +339,24 @@ function String-IsNullOrWhitespace([string] $string)
 # Function to update the $NuSpecFilePath (.nuspec file) with the appropriate information before using it to create the NuGet package.
 function Update-NuSpecFile
 {
+	Write-Verbose "Starting process to update the nuspec file '$NuSpecFilePath'..."
+
     # If we dont' have a NuSpec file to update, throw an error that something went wrong.
     if (!(Test-Path $NuSpecFilePath))
     {
         throw "The Update-NuSpecFile function was called with an invalid NuSpecFilePath; this should not happen. There must be a bug in this script."
     }
+
+	# Validate that the NuSpec file is a valid xml file.
+	try
+	{
+		$nuSpecXml = New-Object System.Xml.XmlDocument
+		$nuSpecXml.Load($NuSpecFilePath)
+	}
+	catch
+	{
+		throw ("An error occurred loading the nuspec xml file '{0}': {1}" -f $NuSpecFilePath, $_.Exception.Message)
+	}
 
     # Get the NuSpec file contents before we make any changes to it, so we can determine if we did in fact make changes to it later (and undo the checkout from TFS if we didn't).
     $script:nuSpecFileContentsBeforeCheckout = [System.IO.File]::ReadAllText($NuSpecFilePath)
@@ -443,6 +456,8 @@ function Update-NuSpecFile
 	{
 		Set-NuSpecReleaseNotes -NuSpecFilePath $NuSpecFilePath -NewReleaseNotes $ReleaseNotes
 	}
+	
+	Write-Verbose "Finished process to update the nuspec file '$NuSpecFilePath'."
 }
 
 function Get-NuSpecVersionNumber([parameter(Position=1,Mandatory=$true)][ValidateScript({Test-Path $_ -PathType Leaf})][string] $NuSpecFilePath)
@@ -1093,7 +1108,7 @@ try
 		}
     }
 	
-	# Get and display the version of NuGet.exe that will be used.
+	# Get and display the version of NuGet.exe that will be used. If NuGet.exe is not found an exception will be thrown automatically.
 	$nuGetVersionString = (& $NuGetExecutableFilePath)[0]	# The first line of the NuGet help info contains the version number.
 	Write-Verbose "Using $($nuGetVersionString)."
 
