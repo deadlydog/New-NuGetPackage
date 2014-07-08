@@ -50,9 +50,11 @@ $packProperties = "Configuration=""$Configuration"";Platform=""$Platform"";"
 $additionalPackProperties = ""
 
 # Specify any additional NuGet Pack options to pass to nuget.exe.
+#	e.g. $additionalPackOptions = "-IncludeReferencedProjects"
 # Do not specify a "-Version" (use $versionNumber above), "-OutputDirectory", or "-NonInteractive", as these are already provided.
 # Do not specify any "-Properties" here; instead use the $additionalPackProperties variable above.
 # Do not specify "-Build", as this may result in an infinite build loop.
+# NuGet Pack options that can be specified: http://docs.nuget.org/docs/reference/command-line-reference#Pack_Command_Options
 $additionalPackOptions = ""
 
 #################################################

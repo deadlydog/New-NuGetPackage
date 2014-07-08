@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata minClientVersion="2.8">
     <id>CreateNewNuGetPackageFromProjectAfterEachBuild</id>
-    <version>1.8.1-Prerelease1</version>
+    <version>1.8.1-Prerelease2</version>
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
@@ -14,7 +14,8 @@
 	This adds a PostBuildScripts folder to your project to house the PowerShell script that is called from the project's Post-Build event to create the NuGet package.
 	If it does not seem to be working, check the Output window for any errors that may have occurred.</description>
     <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
-    <releaseNotes>- Changed to use new NuGet built-in method of marking this package as a developmentDependency (now requires NuGet client 2.8 or higher to download this package).</releaseNotes>
+    <releaseNotes>- Changed to use new NuGet built-in method of marking this package as a developmentDependency (now requires NuGet client 2.8 or higher to download this package).
+- Using new v1.5.1 of New-NuGetPackage.ps1 script which contains improvements and bug fixes.</releaseNotes>
     <copyright>Daniel Schroeder 2013</copyright>
     <tags>Auto Automatic Automatically Build Pack Create New NuGet Package From Project After Each Build On PowerShell Power Shell .nupkg new nuget package NewNuGetPackage New-NuGetPackage</tags>
     <developmentDependency>true</developmentDependency>
