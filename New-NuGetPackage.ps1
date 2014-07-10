@@ -263,7 +263,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
 
 # Get the directory that this script is in.
-$THIS_SCRIPTS_DIRECTORY = Split-Path $script:MyInvocation.MyCommand.Path
+$THIS_SCRIPTS_DIRECTORY_PATH = Split-Path $script:MyInvocation.MyCommand.Path
 
 # The list of project type extensions that NuGet supports packing.
 $VALID_NUGET_PROJECT_TYPE_EXTENSIONS_ARRAY = @(".csproj", ".vbproj", ".fsproj")
@@ -902,13 +902,13 @@ try
 	if ((Test-StringIsNullOrWhitespace $NuSpecFilePath) -and (Test-StringIsNullOrWhitespace $ProjectFilePath) -and (Test-StringIsNullOrWhitespace $PackageFilePath))
 	{
 		# Get all of the .nuspec files in the script's directory.
-		$nuSpecFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY\*" -Include "*.nuspec" -Name
+		$nuSpecFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY_PATH\*" -Include "*.nuspec" -Name
 		
 		# Get all of the project files in the script's directory.
-		$projectFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY\*" -Include $VALID_NUGET_PROJECT_TYPE_EXTENSIONS_WITH_WILDCARD_ARRAY -Name
+		$projectFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY_PATH\*" -Include $VALID_NUGET_PROJECT_TYPE_EXTENSIONS_WITH_WILDCARD_ARRAY -Name
 
         # Get all of the NuGet package files in this script's directory.
-        $packageFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY\*" -Include "*.nupkg" -Name
+        $packageFiles = Get-ChildItem "$THIS_SCRIPTS_DIRECTORY_PATH\*" -Include "*.nupkg" -Name
 	
 		# Get the number of files found.
 		$numberOfNuSpecFilesFound = @($nuSpecFiles).Length
@@ -918,7 +918,7 @@ try
 		# If we only found one project file and no package files, see if we should use the project file.
 		if (($numberOfProjectFilesFound -eq 1) -and ($numberOfPackageFilesFound -eq 0))
 		{
-			$projectPath = Join-Path $THIS_SCRIPTS_DIRECTORY ($projectFiles | Select-Object -First 1)
+			$projectPath = Join-Path $THIS_SCRIPTS_DIRECTORY_PATH ($projectFiles | Select-Object -First 1)
 			$projectsNuSpecFilePath = Get-ProjectsAssociatedNuSpecFilePath -ProjectFilePath $projectPath
 			
 			# If we didn't find any .nuspec files, then use this project file.
@@ -930,7 +930,7 @@ try
 			elseif ($numberOfNuSpecFilesFound -eq 1)
 			{
 				# If the .nuspec file belongs to this project file, use this project file.
-				$nuSpecFilePathInThisScriptsDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY ($nuSpecFiles | Select-Object -First 1)
+				$nuSpecFilePathInThisScriptsDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY_PATH ($nuSpecFiles | Select-Object -First 1)
 				if ((!(Test-StringIsNullOrWhitespace $projectsNuSpecFilePath)) -and ($projectsNuSpecFilePath -eq $nuSpecFilePathInThisScriptsDirectory))
 				{
 					$ProjectFilePath = $projectPath
@@ -940,12 +940,12 @@ try
 		# Else if we only found one .nuspec file and no project or package files, use the .nuspec file.
 		elseif (($numberOfNuSpecFilesFound -eq 1) -and ($numberOfProjectFilesFound -eq 0) -and ($numberOfPackageFilesFound -eq 0))
 		{
-			$NuSpecFilePath = Join-Path $THIS_SCRIPTS_DIRECTORY ($nuSpecFiles | Select-Object -First 1)
+			$NuSpecFilePath = Join-Path $THIS_SCRIPTS_DIRECTORY_PATH ($nuSpecFiles | Select-Object -First 1)
 		}
         # Else if we only found one package file and no .nuspec or project files, use the package file.
         elseif (($numberOfPackageFilesFound -eq 1) -and ($numberOfNuSpecFilesFound -eq 0) -and ($numberOfProjectFilesFound -eq 0))
         {
-            $PackageFilePath = Join-Path $THIS_SCRIPTS_DIRECTORY ($packageFiles | Select-Object -First 1)
+            $PackageFilePath = Join-Path $THIS_SCRIPTS_DIRECTORY_PATH ($packageFiles | Select-Object -First 1)
         }
 		
 		# If we didn't find a clear .nuspec, project, or package file to use, prompt for one.
@@ -984,7 +984,7 @@ try
 				$filterTypes = $filterTypes.Substring(0, $filterTypes.Length - 1)			# Trim off the last character, as it will be a ";".
 				$filter = "$filterMessage|$filterTypes"
 			
-				$filePathToUse = Read-OpenFileDialog -WindowTitle "Select the .nuspec or project file to pack, or the package file (.nupkg) to push..." -InitialDirectory $THIS_SCRIPTS_DIRECTORY -Filter $filter
+				$filePathToUse = Read-OpenFileDialog -WindowTitle "Select the .nuspec or project file to pack, or the package file (.nupkg) to push..." -InitialDirectory $THIS_SCRIPTS_DIRECTORY_PATH -Filter $filter
 			}
 			
 			# If the user cancelled the file dialog, throw an error since we don't have a .nuspec file to use.
@@ -1067,7 +1067,7 @@ try
     if (Test-StringIsNullOrWhitespace $NuGetExecutableFilePath)
     {
         # If the NuGet executable is in the same directory as this script, use it.
-        $nuGetExecutablePathInThisDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY "NuGet.exe"
+        $nuGetExecutablePathInThisDirectory = Join-Path $THIS_SCRIPTS_DIRECTORY_PATH "NuGet.exe"
         if (Test-Path $nuGetExecutablePathInThisDirectory)
         {
             $NuGetExecutableFilePath = $nuGetExecutablePathInThisDirectory
