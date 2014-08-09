@@ -407,7 +407,7 @@ function Update-NuSpecFile
 		# If the user cancelled the prompt or did not provide a valid version number, exit the script.
 		if ((Test-StringIsNullOrWhitespace $VersionNumber) -or !$rxVersionNumberValidation.IsMatch($VersionNumber))
 		{
-			throw "A valid version number to use for the NuGet package was not provided, so exiting script."
+			throw "A valid version number to use for the NuGet package was not provided, so exiting script. The version number provided was '$VersionNumber', which does not conform to the Semantic Versioning guidelines specified at http://semver.org."
 		}
 	}
 	
@@ -768,7 +768,7 @@ function Tfs-Checkout
 	$tfCheckoutCommand = "& ""$tfPath"" checkout /lock:none ""$Path"""
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
-	# Check the file out of TFS, eating any output.
+	# Check the file out of TFS, eating any output and errors.
 	Write-Verbose "About to run command '$tfCheckoutCommand'."
 	Invoke-Expression -Command $tfCheckoutCommand 2>&1 > $null
 }
@@ -797,7 +797,7 @@ function Tfs-IsItemCheckedOut
 	$tfCheckoutCommand = "& ""$tfPath"" status ""$Path"""
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
-	# Check the file out of TFS, capturing the output.
+	# Check the file out of TFS, capturing the output and errors.
 	$status = (Invoke-Expression -Command $tfCheckoutCommand 2>&1)
 
     # Get the escaped path of the file or directory to search the status output for.
@@ -834,7 +834,7 @@ function Tfs-Undo
 	$tfCheckoutCommand = "& ""$tfPath"" undo ""$Path"" /noprompt"
 	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
 	
-	# Check the file out of TFS, eating any output.
+	# Check the file out of TFS, eating any output and errors.
 	Write-Verbose "About to run command '$tfCheckoutCommand'."
 	Invoke-Expression -Command $tfCheckoutCommand 2>&1 > $null
 }
@@ -1094,12 +1094,10 @@ try
 	    $updateCommand = "& ""$NuGetExecutableFilePath"" update -self"
 
 		# Have the NuGet executable try and auto-update itself.
-		$updateOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 	    Write-Verbose "About to run Update command '$updateCommand'."
-	    Invoke-Expression -Command $updateCommand -OutVariable updateOutput > $null
+	    $updateOutput = (Invoke-Expression -Command $updateCommand | Out-String)
 		
-		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
-		$updateOutput = $($updateOutput -join [Environment]::NewLine)
+		# Write the output of the above command to the Verbose stream.
 		Write-Verbose $updateOutput
 		
 		# If we have the path to the NuGet executable, we checked it out of TFS, and it did not auto-update itself, then undo the changes from TFS.
@@ -1185,12 +1183,10 @@ try
 		$packCommand = $packCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
 
 		# Create the package.
-		$packOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 	    Write-Verbose "About to run Pack command '$packCommand'."
-	    Invoke-Expression -Command $packCommand -OutVariable packOutput > $null
+	    $packOutput = (Invoke-Expression -Command $packCommand | Out-String)
 	
-		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
-		$packOutput = $($packOutput -join [Environment]::NewLine)
+		# Write the output of the above command to the Verbose stream.
 		Write-Verbose $packOutput
 	
 	    # Get the path the NuGet Package was created to, and write it to the output stream.
@@ -1301,12 +1297,10 @@ try
 		$pushCommand = $pushCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
 
         # Push the package to the gallery.
-		$pushOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 		Write-Verbose "About to run Push command '$pushCommand'."
-		Invoke-Expression -Command $pushCommand -OutVariable pushOutput > $null
+		$pushOutput = (Invoke-Expression -Command $pushCommand | Out-String)
 		
-		# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
-		$pushOutput = $($pushOutput -join [Environment]::NewLine)
+		# Write the output of the above command to the Verbose stream.
 		Write-Verbose $pushOutput
 
 		# If an error occurred while pushing the package, throw and error. Else it was pushed successfully.
@@ -1368,14 +1362,13 @@ try
 				$setApiKeyCommand = $setApiKeyCommand -ireplace ';', '`;'		# Escape any semicolons so they are not interpreted as the start of a new command.
 
 				# Save the Api key on this PC.
-				$setApiKeyOutput = [string]::Empty	# Variable to hold the NuGet.exe output.
 	            Write-Verbose "About to run command '$setApiKeyCommand'."
-	            Invoke-Expression -Command $setApiKeyCommand -OutVariable setApiKeyOutput
+	            $setApiKeyOutput = (Invoke-Expression -Command $setApiKeyCommand | Out-String)
 				
-				# Convert the output of the above command from an ArrayList of strings to a single string and write it to the Verbose stream.
-				$setApiKeyOutput = $($setApiKeyOutput -join [Environment]::NewLine)
+				# Write the output of the above command to the Verbose stream.
 				Write-Verbose $setApiKeyOutput
-
+				
+				# Determine if the API Key was saved successfully, and throw an error if it wasn't.
                 $expectedSuccessfulNuGetSetApiKeyOutput = ($NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE -f $apiKey, $sourceToPushPackageTo)	# "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
                 if ($setApiKeyOutput -ne $expectedSuccessfulNuGetSetApiKeyOutput)
                 {

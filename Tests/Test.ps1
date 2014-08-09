@@ -53,6 +53,8 @@ Clear-Host
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.3" -ReleaseNotes "Pack project without building and specify version 1.3 and do NOT update the NuGet.exe" -NoPromptForPushPackageToNuGetGallery -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Older Version NuGet Executable\NuGet.exe" -Verbose
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.3" -ReleaseNotes "Pack project without building and specify version 1.3 and update the NuGet.exe" -NoPromptForPushPackageToNuGetGallery -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Older Version NuGet Executable\NuGet.exe" -UpdateNuGetExecutable -Verbose
 
+# Test pushing NuGet package.
+#.\..\New-NuGetPackage.ps1 -PackageFilePath "C:\Users\Dan.Schroeder\Desktop\DansTest\DansTest\bin\Debug\DansTest.1.0.0.0.nupkg" -PushOptions "-Source http://packages2.iqmetrix.net"
 
 
 
