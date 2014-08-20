@@ -42,7 +42,13 @@ if ($postBuildEventText.Contains($postBuildEventCode))
 	return
 }
 
-# Add the Post-Build Event Code to the project and save it (prepend a couple newlines in case there is existing Post Build Event text).
+# Add the Post-Build Event Code to the project (prepend a couple newlines in case there is existing Post Build Event text).
 $postBuildEventText += "`n`r`n`r$postBuildEventCode"
 $project.Properties.Item("PostBuildEvent").Value = $postBuildEventText.Trim()
+
+# Change the build action of the NuGet.exe file from Content to None.
+$nuGetExeFile = $project.ProjectItems.Item("_CreateNewNuGetPackage").ProjectItems.Item("DoNotModify").ProjectItems.Item("NuGet.exe")
+$nuGetExeFile.Properties.Item("BuildAction").Value = 0	# Build Action = None
+
+# Save the changes we made.
 $project.Save()
