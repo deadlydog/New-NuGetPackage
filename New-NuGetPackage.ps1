@@ -359,8 +359,9 @@ function Update-NuSpecFile
 		throw ("An error occurred loading the nuspec xml file '{0}': {1}" -f $NuSpecFilePath, $_.Exception.Message)
 	}
 
-    # Get the NuSpec file contents before we make any changes to it, so we can determine if we did in fact make changes to it later (and undo the checkout from TFS if we didn't).
+    # Get the NuSpec file contents and Last Write Time before we make any changes to it, so we can determine if we did in fact make changes to it later (and undo the checkout from TFS if we didn't).
     $script:nuSpecFileContentsBeforeCheckout = [System.IO.File]::ReadAllText($NuSpecFilePath)
+	$script:nuSpecLastWriteTimeBeforeCheckout = [System.IO.File]::GetLastWriteTime($NuSpecFilePath)
 
 	# Try and check the file out of TFS.
     $script:nuSpecFileWasAlreadyCheckedOut = Tfs-IsItemCheckedOut -Path $NuSpecFilePath
@@ -879,6 +880,7 @@ function Get-NuSpecsAssociatedProjectFilePath([parameter(Position=1,Mandatory=$t
 # Define some variables that we need to access within both the Try and Finally blocks of the script.
 $script:nuSpecFileWasAlreadyCheckedOut = $false
 $script:nuSpecFileContentsBeforeCheckout = $null
+$script:nuSpecLastWriteTimeBeforeCheckout = $null
 
 # Display the time that this script started running.
 $scriptStartTime = Get-Date
@@ -1400,9 +1402,16 @@ finally
 		# If we checked the NuSpec file out from TFS.
 		if ((Test-Path $NuSpecFilePath) -and ($script:nuSpecFileWasAlreadyCheckedOut -eq $false))
 		{
-			# If the NuSpec file should not be updated, or the contents have not been changed, try and undo our checkout from TFS.
+			# If the NuSpec file should not be updated, or the contents have not been changed.
 			$newNuSpecFileContents = [System.IO.File]::ReadAllText($NuSpecFilePath)
-			if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents)) { Tfs-Undo -Path $NuSpecFilePath }
+			if ($DoNotUpdateNuSpecFile -or ($script:nuSpecFileContentsBeforeCheckout -eq $newNuSpecFileContents))
+			{
+				# Try and undo our checkout from TFS.
+				Tfs-Undo -Path $NuSpecFilePath
+				
+				# Also reset the file's LastWriteTime so that MSBuild does not always rebuild the project because it thinks the .nuspec file was modified after the project's .pdb file.
+				[System.IO.File]::SetLastWriteTime($NuSpecFilePath, $script:nuSpecLastWriteTimeBeforeCheckout)
+			}
 		}
 	}
 }
