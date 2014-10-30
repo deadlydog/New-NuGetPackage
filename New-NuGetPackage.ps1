@@ -154,7 +154,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.5.3
+	Version: 1.5.4
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -297,7 +297,7 @@ $TF_EXE_KEYWORD_IN_PENDING_CHANGES_MESSAGE = 'change\(s\)'	# Escape regular expr
 $NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE_REGEX = [regex] "(?i)(Successfully created package '(?<FilePath>.*?)'.)"
 $NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE = 'Your package was pushed.'
 $NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE = "The API Key '{0}' was saved for '{1}'."
-$NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION = "Update successful."
+$NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION = 'Update successful.'
 
 #==========================================================
 # Define functions used by the script.
@@ -1103,7 +1103,7 @@ try
 		Write-Verbose $updateOutput
 		
 		# If we have the path to the NuGet executable, we checked it out of TFS, and it did not auto-update itself, then undo the changes from TFS.
-		if ((Test-Path $NuGetExecutableFilePath) -and ($nuGetExecutableWasAlreadyCheckedOut -eq $false) -and !$updateOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION))
+		if ((Test-Path $NuGetExecutableFilePath) -and ($nuGetExecutableWasAlreadyCheckedOut -eq $false) -and !$updateOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_UPDATED_TO_NEW_VERSION.Trim()))
 		{
 			Tfs-Undo -Path $NuGetExecutableFilePath
 		}
@@ -1306,7 +1306,7 @@ try
 		Write-Verbose $pushOutput
 
 		# If an error occurred while pushing the package, throw and error. Else it was pushed successfully.
-		if (!$pushOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE))
+		if (!$pushOutput.EndsWith($NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE.Trim()))
         {
             throw "Could not determine if package was pushed to gallery successfully. Perhaps an error occurred while pushing it. Look for errors from NuGet.exe above (in the console window), or in the following NuGet.exe output. You can also try running this command with the -Verbose switch for more information:{0}{1}" -f [Environment]::NewLine, $pushOutput
         }
@@ -1372,7 +1372,7 @@ try
 				
 				# Determine if the API Key was saved successfully, and throw an error if it wasn't.
                 $expectedSuccessfulNuGetSetApiKeyOutput = ($NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE -f $apiKey, $sourceToPushPackageTo)	# "The API Key '$apiKey' was saved for '$sourceToPushPackageTo'."
-                if ($setApiKeyOutput -ne $expectedSuccessfulNuGetSetApiKeyOutput)
+                if ($setApiKeyOutput -ne $expectedSuccessfulNuGetSetApiKeyOutput.Trim())
                 {
                     throw "Could not determine if the API key was saved successfully. Perhaps an error occurred while saving it. Look for errors from NuGet.exe above (in the console window), or in the following NuGet.exe output. You can also try running this command with the -Verbose switch for more information:{0}{1}" -f [Environment]::NewLine, $packOutput
                 }
@@ -1410,7 +1410,12 @@ finally
 				Tfs-Undo -Path $NuSpecFilePath
 				
 				# Also reset the file's LastWriteTime so that MSBuild does not always rebuild the project because it thinks the .nuspec file was modified after the project's .pdb file.
+				# We first have to make sure the file is writable before trying to set the LastWriteTime, and then restore the Read-Only attribute if it was set before.
+				$nuspecFileInfo = New-Object System.IO.FileInfo($NuSpecFilePath)
+				$nuspecFileIsReadOnly = $nuspecFileInfo.IsReadOnly
+				$nuspecFileInfo.IsReadOnly = $false
 				[System.IO.File]::SetLastWriteTime($NuSpecFilePath, $script:nuSpecLastWriteTimeBeforeCheckout)
+				if ($nuspecFileIsReadOnly) { $nuspecFileInfo.IsReadOnly = $true }
 			}
 		}
 	}
