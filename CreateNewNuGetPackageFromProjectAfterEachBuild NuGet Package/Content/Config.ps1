@@ -35,11 +35,13 @@ $platform = ""
 $packProperties = ""
 
 # Specify any NuGet Pack options to pass to nuget.exe.
-#	e.g. $packOptions = "-IncludeReferencedProjects"
+#	e.g. $packOptions = "-Symbols"
+#	e.g. $packOptions = "-IncludeReferencedProjects -Symbols"
 # Do not specify a "-Version" (use $versionNumber above), "-OutputDirectory", or "-NonInteractive", as these are already provided.
 # Do not specify any "-Properties" here; instead use the $packProperties variable above.
 # Do not specify "-Build", as this may result in an infinite build loop.
 # NuGet Pack options that can be specified: http://docs.nuget.org/docs/reference/command-line-reference#Pack_Command_Options
+# Use "-Symbols" to also create a symbols package. When pushing your package, the symbols package will automatically be detected and pushed as well: https://www.symbolsource.org/Public/Wiki/Publishing
 $packOptions = ""
 
 
