@@ -795,11 +795,12 @@ function Tfs-IsItemCheckedOut
     }
 	
 	# Construct the status command to run.
-	$tfCheckoutCommand = "& ""$tfPath"" status ""$Path"""
-	if ($Recursive) { $tfCheckoutCommand += " /recursive" }
+	$tfStatusCommand = "& ""$tfPath"" status ""$Path"""
+	if ($Recursive) { $tfStatusCommand += " /recursive" }
 	
 	# Check the file out of TFS, capturing the output and errors.
-	$status = (Invoke-Expression -Command $tfCheckoutCommand 2>&1)
+	Write-Verbose "About to run command '$tfStatusCommand'."
+	$status = (Invoke-Expression -Command $tfStatusCommand 2>&1)
 
     # Get the escaped path of the file or directory to search the status output for.
     $escapedPath = $Path.Replace('\', '\\')
@@ -1410,12 +1411,16 @@ finally
 				Tfs-Undo -Path $NuSpecFilePath
 				
 				# Also reset the file's LastWriteTime so that MSBuild does not always rebuild the project because it thinks the .nuspec file was modified after the project's .pdb file.
-				# We first have to make sure the file is writable before trying to set the LastWriteTime, and then restore the Read-Only attribute if it was set before.
-				$nuspecFileInfo = New-Object System.IO.FileInfo($NuSpecFilePath)
-				$nuspecFileIsReadOnly = $nuspecFileInfo.IsReadOnly
-				$nuspecFileInfo.IsReadOnly = $false
-				[System.IO.File]::SetLastWriteTime($NuSpecFilePath, $script:nuSpecLastWriteTimeBeforeCheckout)
-				if ($nuspecFileIsReadOnly) { $nuspecFileInfo.IsReadOnly = $true }
+				# If we recorded the NuSpec file's last write time, then reset it.
+				if ($script:nuSpecLastWriteTimeBeforeCheckout -ne $null)
+				{
+					# We first have to make sure the file is writable before trying to set the LastWriteTime, and then restore the Read-Only attribute if it was set before.
+					$nuspecFileInfo = New-Object System.IO.FileInfo($NuSpecFilePath)
+					$nuspecFileIsReadOnly = $nuspecFileInfo.IsReadOnly
+					$nuspecFileInfo.IsReadOnly = $false
+					[System.IO.File]::SetLastWriteTime($NuSpecFilePath, $script:nuSpecLastWriteTimeBeforeCheckout)
+					if ($nuspecFileIsReadOnly) { $nuspecFileInfo.IsReadOnly = $true }
+				}
 			}
 		}
 	}
