@@ -341,7 +341,7 @@ function Update-NuSpecFile
 {
 	Write-Verbose "Starting process to update the nuspec file '$NuSpecFilePath'..."
 
-    # If we dont' have a NuSpec file to update, throw an error that something went wrong.
+    # If we don't have a NuSpec file to update, throw an error that something went wrong.
     if (!(Test-Path $NuSpecFilePath))
     {
         throw "The Update-NuSpecFile function was called with an invalid NuSpecFilePath; this should not happen. There must be a bug in this script."
@@ -444,13 +444,13 @@ function Update-NuSpecFile
 			{
 				$ReleaseNotes = Read-MultiLineInputBoxDialog -Message "$promptMessage`:" -WindowTitle "Enter Release Notes For New Package" -DefaultText $currentReleaseNotes
 			}
+			
+			# If the user cancelled the release notes prompt, exit the script.
+			if ($ReleaseNotes -eq $null)
+			{ 
+				throw "User cancelled the Release Notes prompt, so exiting script."
+			}
 		}		
-	}
-	
-	# If the user cancelled the release notes prompt, exit the script.
-	if ($ReleaseNotes -eq $null)
-	{ 
-		throw "User cancelled the Release Notes prompt, so exiting script."
 	}
 
 	# Insert the given Release Notes into the .nuspec file if some were provided, and they are different than the current ones.
