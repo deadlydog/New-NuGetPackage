@@ -12,7 +12,7 @@ cd $THIS_SCRIPTS_DIRECTORY_PATH
 Clear-Host
 
 # Test packing from a project with a NuSpec file.
-.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\Test Project\TestProject\TestProject.csproj" -PackOptions "-Build -OutputDirectory ""$THIS_SCRIPTS_DIRECTORY_PATH""" -Verbose -NuGetExecutableFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\NuGet Executable\NuGet.exe"
+#.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\Test Project\TestProject\TestProject.csproj" -PackOptions "-Build -OutputDirectory ""$THIS_SCRIPTS_DIRECTORY_PATH""" -Verbose
 #.\..\New-NuGetPackage.ps1 -ProjectFilePath "$THIS_SCRIPTS_DIRECTORY_PATH\Test Files\Test Project\TestProject\TestProject.csproj" -VersionNumber "1.1" -ReleaseNotes "Pack project without building and specify version 1.1"
 
 # Test packing from a project without a NuSpec file.

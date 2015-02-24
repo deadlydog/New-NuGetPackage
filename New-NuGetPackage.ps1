@@ -311,8 +311,8 @@ trap [Exception]
 	
 	if (!$NoPromptForInputOnError)
 	{
-		# If we should prompt directly from Powershell.
-		if ($UsePowershellPrompts)
+		# If we should prompt directly from PowerShell.
+		if ($UsePowerShellPrompts)
 		{
 			Write-Host "Press any key to continue ..."
 			$x = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyUp")
@@ -389,8 +389,8 @@ function Update-NuSpecFile
 		{
 			$promptMessage = 'Enter the NuGet package version number to use (x.x[.x.x] or $version$ if packing a project file)'
 			
-			# If we should prompt directly from Powershell.
-			if ($UsePowershellPrompts)
+			# If we should prompt directly from PowerShell.
+			if ($UsePowerShellPrompts)
 			{
 				$VersionNumber = Read-Host "$promptMessage. Current value in the .nuspec file is:`n$currentVersionNumber`n"
 			}
@@ -434,8 +434,8 @@ function Update-NuSpecFile
 		{
 			$promptMessage = "Please enter the release notes to include in the new NuGet package"
 			
-			# If we should prompt directly from Powershell.
-			if ($UsePowershellPrompts)
+			# If we should prompt directly from PowerShell.
+			if ($UsePowerShellPrompts)
 			{
 				$ReleaseNotes = Read-Host "$promptMessage. Current value in the .nuspec file is:`n$currentReleaseNotes`n"
 			}
@@ -954,8 +954,8 @@ try
 		# If we didn't find a clear .nuspec, project, or package file to use, prompt for one.
 		if ((Test-StringIsNullOrWhitespace $NuSpecFilePath) -and (Test-StringIsNullOrWhitespace $ProjectFilePath) -and (Test-StringIsNullOrWhitespace $PackageFilePath))
 		{
-			# If we should prompt directly from Powershell.
-			if ($UsePowershellPrompts)
+			# If we should prompt directly from PowerShell.
+			if ($UsePowerShellPrompts)
 			{
 				# Construct the prompt message with all of the supported project extensions.
 				# $promptmessage should end up looking like: "Enter the path to the .nuspec or project file (.csproj, .vbproj, .fsproj) to pack, or the package file (.nupkg) to push"
@@ -1013,8 +1013,8 @@ try
                     {
 					    $promptMessage = "The selected .nuspec file appears to be associated with the project file:`n`n$projectPath`n`nIt is generally preferred to pack the project file, and the .nuspec file will automatically get picked up.`nDo you want to pack the project file instead?"
 				
-					    # If we should prompt directly from Powershell.
-					    if ($UsePowershellPrompts)
+					    # If we should prompt directly from PowerShell.
+					    if ($UsePowerShellPrompts)
 					    {
 						    $promptMessage += " (Yes|No|Cancel)"
 						    $answer = Read-Host $promptMessage
@@ -1253,8 +1253,8 @@ try
 	{
 		$promptMessage = "Do you want to push this package:`n'$nuGetPackageFilePath'`nto the NuGet Gallery '$sourceToPushPackageTo'?"
 		
-		# If we should prompt directly from Powershell.
-		if ($UsePowershellPrompts)
+		# If we should prompt directly from PowerShell.
+		if ($UsePowerShellPrompts)
 		{
 			$promptMessage += " (Yes|No)"
 			$answer = Read-Host $promptMessage
@@ -1288,8 +1288,8 @@ try
             {
                 $promptMessage = "It appears that you do not have an API key saved on this PC for the source to push the package to '$sourceToPushPackageTo'.`n`nYou must provide an API key to push this package to the NuGet Gallery.`n`nPlease enter your API key"
 		
-		        # If we should prompt directly from Powershell.
-		        if ($UsePowershellPrompts)
+		        # If we should prompt directly from PowerShell.
+		        if ($UsePowerShellPrompts)
 		        {
 			        $apiKey = Read-Host $promptMessage
 		        }
@@ -1361,7 +1361,7 @@ try
 				$promptMessage = "Do you want to save the API key you provided on this PC so that you don't have to enter it again next time?"
 			
 				# If we should prompt directly from PowerShell.
-				if ($UsePowershellPrompts)
+				if ($UsePowerShellPrompts)
 				{
 					$promptMessage += " (Yes|No)"
 					$answer = Read-Host $promptMessage
