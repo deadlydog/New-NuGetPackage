@@ -1111,7 +1111,23 @@ try
     }
 	
 	# Get and display the version of NuGet.exe that will be used. If NuGet.exe is not found an exception will be thrown automatically.
-	$nuGetVersionString = (& $NuGetExecutableFilePath)[0]	# The first line of the NuGet help info contains the version number.
+	# Create the command to use to get the Nuget Help info.
+    $helpCommand = "& ""$NuGetExecutableFilePath"""
+
+	# Get the NuGet.exe Help output.
+    Write-Verbose "About to run Help command '$helpCommand'."
+    $helpOutput = (Invoke-Expression -Command $helpCommand | Out-String).Trim()	
+	
+	# If no Help output was retrieved, the NuGet.exe likely returned an error.
+	if (Test-StringIsNullOrWhitespace $helpOutput)
+	{
+		# Get the error information returned by NuGet.exe, and throw an error that we could not run NuGet.exe as expected.
+		$helpError = (Invoke-Expression -Command $helpCommand 2>&1 | Out-String).Trim()	
+		throw "NuGet information could not be retrieved by running '$NuGetExecutableFilePath'.`r`n`r`nRunning '$NuGetExecutableFilePath' returns the following information:`r`n`r`n$helpError"
+	}
+	
+	# Display the version of the NuGet.exe. This information is the first line of the NuGet Help output.
+	$nuGetVersionString = ($helpOutput -split "`r`n")[0]
 	Write-Verbose "Using $($nuGetVersionString)."
 	
 	# Declare the backup directory to create the NuGet Package in, as not all code paths will set it (i.e. when pushing an existing package), but we check it later.
