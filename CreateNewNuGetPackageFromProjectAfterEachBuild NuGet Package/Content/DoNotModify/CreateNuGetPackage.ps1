@@ -180,11 +180,11 @@ function Ensure-AssemblyFileExistsWhereNuGetExpectsItToBe([string]$ProjectFilePa
 		if ($assemblyType.Equals("Library", [System.StringComparison]::InvariantCultureIgnoreCase)) { $assemblyName = "$assemblyName.dll" }
 		else { $assemblyName = "$assemblyName.exe" }
 
-		# Get the full paths of the assembly.
+		# Get the full path of the assembly.
 		$assemblyPath = Join-Path $OutputDirectory $assemblyName
 		$nuGetExpectedAssemblyPath = Join-Path $nuGetExpectedOutputDirectoryPath $assemblyName
 
-		# If the assembly is not in the Output Directory (which is should be), display an error message and return.
+		# If the assembly is not in the Output Directory (which it should be), display an error message and return.
 		if (!(Test-Path $assemblyPath -PathType Leaf)) { Write-Output "Could not find the assembly at the expected path '$assemblyPath', so cannot continue pre-processing."; return }
 		
 		# Make sure the assembly exists in the Project File's Output Path, since that is where NuGet.exe expects to find it.
