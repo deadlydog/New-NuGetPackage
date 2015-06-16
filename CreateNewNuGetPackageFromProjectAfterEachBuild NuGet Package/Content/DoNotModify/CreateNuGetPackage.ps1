@@ -265,7 +265,7 @@ if ($appendConfigurationAndPlatformToNuGetPackageFileName)
 	$nuGetPackageFilePath = $desiredNuGetPackageFilePath
 	
 	# If a Symbols NuGet package was specified to be created too, rename it as well.
-	if ($packOptions -like '-Symbols')
+	if ($packOptions -like '*-Symbols*')
 	{
 		# Build the new desired Symbols NuGet package file path.
 		$desiredSymbolsNuGetPackageFileName = "$nuGetPackageFileNameWithoutExtension.$BuildConfiguration.$BuildPlatform.symbols$nuGetPackageFileExtension"
