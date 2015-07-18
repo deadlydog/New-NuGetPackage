@@ -252,6 +252,10 @@ if ($appendConfigurationAndPlatformToNuGetPackageFileName)
 	# If the NuGet package file exists, rename it.
 	if (Test-Path -Path $nugetPackageFilePath -PathType Leaf)
 	{
+		# If a file with the desired name already exists, we must delete that file first bfeore doing the rename.
+		if (Test-Path -Path $desiredNuGetPackageFilePath -PathType Leaf)
+		{ Remove-Item -Path $desiredNuGetPackageFilePath -Force }
+	
 		# Rename the NuGet package file name to the desired file name.
 		Rename-Item -Path $nugetPackageFilePath -NewName $desiredNuGetPackageFilePath -Force
 		
