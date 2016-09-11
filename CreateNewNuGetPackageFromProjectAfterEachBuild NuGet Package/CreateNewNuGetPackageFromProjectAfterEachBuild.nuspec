@@ -12,7 +12,7 @@
     <description>Automatically creates a NuGet package from your project each time it builds. The NuGet package is placed in the project's output directory.
 	If you want to use a .nuspec file, place it in the same directory as the project's project file (e.g. .csproj, .vbproj, .fsproj).
 	This adds a PostBuildScripts folder to your project to house the PowerShell script that is called from the project's Post-Build event to create the NuGet package.
-	If it does not seem to be working, check the Output window for any errors that may have occurred.</description>
+	If it does not seem to be working, check the Visual Studio Output window for any errors that may have occurred.</description>
     <summary>Automatically creates a NuGet package from your project each time it builds.</summary>
     <releaseNotes>- Adding the path for VS 2015 to find the TF.exe.
 - Updated the NuGet.exe to the latest version to avoid build issues.</releaseNotes>
