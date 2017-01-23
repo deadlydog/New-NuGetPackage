@@ -154,7 +154,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.5.7
+	Version: 1.5.8
 	
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the 
@@ -1269,14 +1269,17 @@ try
 	{
         $sourceToPushPackageTo = $match.Groups["Source"].Value
             
-        # Strip off any quotes around the address.
+        # Strip off any single or double quotes around the address.
         $sourceToPushPackageTo = $sourceToPushPackageTo.Trim([char[]]@("'", '"'))
 	}
-    # Else they did not provide an explicit source to push to.
+    # Else they did not provide an explicit source to push to, so set it to the default.
 	else
 	{
-		# So assume they are pushing to the typical default source.
+		# Assume they are pushing to the typical default source.
         $sourceToPushPackageTo = $DEFAULT_NUGET_SOURCE_TO_PUSH_TO
+		
+		# Update the PushOptions to include the default source (as -Source is now a required parameter as of NuGet.exe v3.4.2).
+		$PushOptions = $PushOptions.Trim() + " -Source $sourceToPushPackageTo"
 	}
 
 	# If the switch to push the package to the gallery was not provided and we are allowed to prompt, prompt the user if they want to push the package.
