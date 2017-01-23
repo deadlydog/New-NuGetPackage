@@ -294,6 +294,7 @@ $TF_EXE_NO_PENDING_CHANGES_MESSAGE = 'There are no pending changes.'
 $TF_EXE_KEYWORD_IN_PENDING_CHANGES_MESSAGE = 'change\(s\)'	# Escape regular expression characters.
 
 # NuGet.exe output strings.
+$NUGET_EXE_VERSION_NUMBER_REGEX = [regex] "(?i)(NuGet Version: (?<Version>\d+\.\d+\.\d+\.\d+).)"
 $NUGET_EXE_SUCCESSFULLY_CREATED_PACKAGE_MESSAGE_REGEX = [regex] "(?i)(Successfully created package '(?<FilePath>.*?)'.)"
 $NUGET_EXE_SUCCESSFULLY_PUSHED_PACKAGE_MESSAGE = 'Your package was pushed.'
 $NUGET_EXE_SUCCESSFULLY_SAVED_API_KEY_MESSAGE = "The API Key '{0}' was saved for '{1}'."
@@ -1126,8 +1127,39 @@ try
 	}
 	
 	# Display the version of the NuGet.exe. This information is the first line of the NuGet Help output.
-	$nuGetVersionString = ($helpOutput -split "`r`n")[0]
-	Write-Verbose "Using $($nuGetVersionString)."
+	$nuGetVersionLine = ($helpOutput -split "`r`n")[0]
+	Write-Verbose "Using $($nuGetVersionLine)."
+	
+	# Force NuGet.exe to output English so that we can properly parse and match against it's output.
+	# The -ForceEnglishOutput switch was only added in NuGet.exe v3.5, so default to using it, and remove it if the version is less than v3.5.
+	$nuGetForceEnglishOutputSwitch = " -ForceEnglishOutput"
+	$PackOptions += $nuGetForceEnglishOutputSwitch
+	[array]$nuGetVersionParts = $null
+    $nugetVersionMatch = $NUGET_EXE_VERSION_NUMBER_REGEX.Match($nuGetVersionLine)
+    if ($nugetVersionMatch.Success)
+    {
+		# Get the version of NuGet.exe being used.
+	    $nuGetVersionString = $nugetVersionMatch.Groups["Version"].Value
+		
+		if (!(Test-StringIsNullOrWhitespace $nuGetVersionString))
+		{
+			# If we are using a version of NuGet.exe less than v3.5, remove the switch to force English output.
+			$nuGetVersionParts = $nuGetVersionString -split "\."
+			if ($nuGetVersionParts.Count -ge 2)
+			{
+				if ($nuGetVersionParts[0] -le 2 -or ($nuGetVersionParts[0] -eq 3 -and $nuGetVersionParts[1] -lt 5))
+				{
+					$PackOptions = $PackOptions.Replace($nuGetForceEnglishOutputSwitch, [string]::Empty)
+				}
+			}
+		}
+    }
+	
+	# If we weren't actually able to determine which version of NuGet.exe is being used, display a warning.
+	if ($nuGetVersionParts -eq $null -or $nuGetVersionParts.Count -lt 2)
+    {
+	    Write-Warning "Could not determine which version of NuGet.exe is being used."
+    }
 	
 	# Declare the backup directory to create the NuGet Package in, as not all code paths will set it (i.e. when pushing an existing package), but we check it later.
 	$defaultDirectoryPathToPutNuGetPackageIn = $null
