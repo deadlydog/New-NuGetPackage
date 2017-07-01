@@ -9,12 +9,15 @@ Depending on the size of your project and it's dependencies, the time this adds 
 To add the "Create New NuGet Package From Project After Each Build" package to your project:
 
 1. From Solution Explorer in Visual Studio, right-click on your project's **References** node and choose **Manage NuGet Packages...**
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/NavigateToManageNugetPackages.png)
 
 2. In the NuGet Package Manager, select **Online** from the menu on the left to search for packages online, and then in the search box on the top-right type in **"New NuGet Package"** (include the double quotes).  When the "Create New NuGet Package From Project After Each Build" package appears, click its **Install** button.
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/InstallNuGetPackageFromPackageManager.png)
 
 3. That's it. You should now see a **_CreateNewNuGetPackage** folder added to your project that contains the files used to create an NuGet package from your project after each build.
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/FilesAddedToProject.png)
 
 The only file that you need to be concerned about in here is the Config.ps1, as you can use it to configure how your package is built and uploaded (see below).
@@ -40,7 +43,9 @@ You may also specify any other Pack properties or options to pass to NuGet.exe i
 Since pushing your package to the NuGet Gallery is not automatic (intentionally), you still have to do that manually.  To make it easy, we can take advantage of scripts in the _CreateNewNuGetPackage folder to push the new NuGet Package to the Gallery:
 
 1. Right-click on the **RunMeToUploadNuGetPackage.cmd** file in Visual Studio and choose **Run**. If you don't see **Run**, you can get this functionality by installing the [VSCommands Visual Studio extension](https://visualstudiogallery.msdn.microsoft.com/c6d1c265-7007-405c-a68b-5606af238ece).
+
 ![](NuGet Package To Create A NuGet Package From Your Project After Every Build_RunUploadPackageScript.png)
+
 Without VSCommands, you will need to run the batch file from Windows/File Explorer. You can easily do this by right-clicking the **_CreateNewNuGetPackage** directory and choosing **Open Folder in File Explorer**, and once the directory opens, double-click the **RunMeToUploadNuGetPackage.cmd** file.
 
 2. It will then prompt you for the file to pack/push, so you can navigate to the project's output directory (e.g. \bin\Release) and choose the .nupkg file that you want to push.
@@ -52,6 +57,7 @@ Without VSCommands, you will need to run the batch file from Windows/File Explor
 ### Pushing To A Custom NuGet Gallery
 
 If you plan on pushing your package to a custom server (instead of the default nuget.org), you can edit the **Config.ps1** file to specify your custom url. Just set the **$sourceToUploadTo** variable to your custom url.
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/ChangeDefaultPushLocation.png)
 
 Then when you run the RunMeToUploadNuGetPackage.cmd script it will push to your custom location.
