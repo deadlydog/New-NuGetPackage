@@ -19,6 +19,9 @@ __This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, 
 
 The script provides parameters for the Pack and Push Options, which will be passed as-is to nuget.exe, allowing for all of the same functionality as calling nuget.exe directly yourself.
 
+
+## Getting Started Quickly
+
 Here are some examples of how to run the script from PowerShell:
 
 ```PowerShell
@@ -26,7 +29,7 @@ Here are some examples of how to run the script from PowerShell:
 & "C:\Some Folder\New-NuGetPackage.ps1"   # Use absolute path to run script from anywhere.
 ```
 
-Below are more examples of calling the script.  For more information on the script and its parameters, [check out the documentation](documentation).
+Below are more examples of calling the script.  For more information on the script and its parameters, [check out the documentation](docs/HowToUseTheNewNuGetPackagePowerShellScript.md).
 
 ```PowerShell
 & ".\New-NuGetPackage.ps1" -NuSpecFilePath ".\Some Folder\SomeNuSpecFile.nuspec"
