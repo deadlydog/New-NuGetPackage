@@ -10,12 +10,13 @@ __This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, 
 ## Features
 
 * The script uses nuget.exe to pack a .nuspec or project file (.csproj, .vbproj, .fsproj) and optionally push it to a NuGet gallery.
-* Can be ran from PowerShell or directly from Windows Explorer (e.g. double-click it).
+* Can be ran from PowerShell or directly from Windows Explorer (e.g. double-click it, or right-click -> Run with PowerShell).
 * If no parameters are provided the user will be prompted for:
   * the .nuspec or project file to pack, or package to push (if one can't be found automatically)
   * the version number and release notes to use for the package (if a .nuspec file is used)
   * whether the package should be pushed to a NuGet gallery or not.
 * Parameters may be provided to supply these values and/or suppress the prompts, so it can be integrated into your build system.
+
 The script provides parameters for the Pack and Push Options, which will be passed as-is to nuget.exe, allowing for all of the same functionality as calling nuget.exe directly yourself.
 
 Here are some examples of how to run the script from PowerShell:
