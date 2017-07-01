@@ -3,9 +3,9 @@
 
 ## Prerequisites
 
-1. You have [downloaded the nuget executable](https://github.com/NuGet/Home/releases), and (optionally) [it has been added to your PATH](AddNuGet.exeToYourPATH.md).
+1. You have [downloaded the nuget executable](https://github.com/NuGet/Home/releases), and (optionally) [add it to your PATH](AddNuGetExeToYourPATH.md).
 	* In order to run the script from Windows Explorer, nuget.exe must be added to your PATH or in the same directory as the New-NuGetPackage.ps1 file.
-1. You have [changed your system's PowerShell Execution Policy](ChangePowerShellsExecutionPolicy.md) to allow PowerShell scripts to be run.
+1. You have [changed your system's PowerShell Execution Policy](CheckAndChangePowerShellsExecutionPolicy.md) to allow PowerShell scripts to be run.
 1. You have at least PowerShell v2.0.  [Check which PowerShell version you have](CheckWhichVersionOfPowerShellYouHaveInstalled.md).
 
 

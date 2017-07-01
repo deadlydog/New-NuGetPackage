@@ -4,7 +4,7 @@ New-NuGetPackage.ps1 is a PowerShell script to make creating and publishing NuGe
 
 This script is also used by a NuGet Package that you can use to [automate making your project's NuGet packages in Visual Studio](docs/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild.md).
 
-__This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, and it is recommended that you [add nuget to your PATH](docs/AddNuGet.exeToYourPath.md).
+__This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, and it is recommended that you [add nuget to your PATH](docs/AddNuGetExeToYourPath.md).
 
 
 ## Features
@@ -22,14 +22,14 @@ The script provides parameters for the Pack and Push Options, which will be pass
 
 ## Getting Started Quickly
 
-Here are some examples of how to run the script from PowerShell:
+Here are a couple examples of how to run the script from PowerShell to have the GUI prompt you for the required parameters:
 
 ```PowerShell
 & .\New-NuGetPackage.ps1    # Can use relative path when in same directory as the script.
 & "C:\Some Folder\New-NuGetPackage.ps1"   # Use absolute path to run script from anywhere.
 ```
 
-Below are more examples of calling the script.  For more information on the script and its parameters, [check out the documentation](docs/HowToUseTheNewNuGetPackagePowerShellScript.md).
+Below are some examples of calling the script with parameters to avoid the GUI prompts. For more information on the script and its parameters, [check out the documentation](docs/HowToUseTheNewNuGetPackagePowerShellScript.md).
 
 ```PowerShell
 & ".\New-NuGetPackage.ps1" -NuSpecFilePath ".\Some Folder\SomeNuSpecFile.nuspec"
