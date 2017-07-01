@@ -6,8 +6,8 @@
     <title>Create New NuGet Package From Project After Each Build</title>
     <authors>Daniel Schroeder,iQmetrix</authors>
     <owners>Daniel Schroeder,iQmetrix</owners>
-    <licenseUrl>https://newnugetpackage.codeplex.com/license</licenseUrl>
-    <projectUrl>https://newnugetpackage.codeplex.com/wikipage?title=NuGet%20Package%20To%20Create%20A%20NuGet%20Package%20From%20Your%20Project%20After%20Every%20Build</projectUrl>
+    <licenseUrl>https://github.com/deadlydog/New-NuGetPackage/blob/master/License.md</licenseUrl>
+    <projectUrl>https://github.com/deadlydog/New-NuGetPackage/blob/master/docs/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild.md</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Automatically creates a NuGet package from your project each time it builds. The NuGet package is placed in the project's output directory.
 	If you want to use a .nuspec file, place it in the same directory as the project's project file (e.g. .csproj, .vbproj, .fsproj).
