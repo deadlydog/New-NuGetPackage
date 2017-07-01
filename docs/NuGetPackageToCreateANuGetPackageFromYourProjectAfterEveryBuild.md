@@ -1,4 +1,5 @@
 # NuGet Package To Automatically Create Your NuGet Packages
+
 I've also created [a NuGet package called "Create New NuGet Package From Project After Each Build"](https://nuget.org/packages/CreateNewNuGetPackageFromProjectAfterEachBuild/) that you can include in your Visual Studio project that will call the New-NuGetPackage.ps1 script from your project's Post-Build events to automatically create a NuGet package every time your project builds.  So just add that NuGet package to your project and instantly you will have a NuGet package (.nupkg) created for your project that is always up-to-date with your last successful build.  The .nupkg file is placed in the project's output directory (i.e. in the same directory as the project's .dll/.exe).
 
 Depending on the size of your project and it's dependencies, the time this adds to your build should not be noticeable (only a second or two during my tests).  Obviously the NuGet package does not automatically push the package to the gallery on every build though, as that would be very wasteful and would require more time each build.  Fortunately you can just run the script manually to push the package to the gallery (see below).
@@ -28,12 +29,14 @@ The NuGet.exe is included so that you are not required to have NuGet.exe added t
 ## Generate Your Project's NuGet Package
 
 Just build your project and the NuGet Package file (.nupkg) should get created in your project's output directory alongside the project's assembly.
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/NuGetPackageInOutputDirectory.png)
 
 
 ## Specify A Specific NuGet Package Version, Release Notes, And More
 
 If you want your NuGet package to have a different version than the assembly you are packing, or you want to provide release notes in your package, you can do so by providing values for the the **$versionNumber** and **$releaseNotes** variables in the **Config.ps1** file:
+
 ![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/SpecifyVersionNumberAndReleaseNotes.png)
 
 You may also specify any other Pack properties or options to pass to NuGet.exe in this file, such as to always include referenced project's assemblies in the package, or to exclude certain files from the package.
@@ -44,7 +47,7 @@ Since pushing your package to the NuGet Gallery is not automatic (intentionally)
 
 1. Right-click on the **RunMeToUploadNuGetPackage.cmd** file in Visual Studio and choose **Run**. If you don't see **Run**, you can get this functionality by installing the [VSCommands Visual Studio extension](https://visualstudiogallery.msdn.microsoft.com/c6d1c265-7007-405c-a68b-5606af238ece).
 
-![](NuGet Package To Create A NuGet Package From Your Project After Every Build_RunUploadPackageScript.png)
+![](Images/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild/RunUploadPackageScript.png)
 
 Without VSCommands, you will need to run the batch file from Windows/File Explorer. You can easily do this by right-clicking the **_CreateNewNuGetPackage** directory and choosing **Open Folder in File Explorer**, and once the directory opens, double-click the **RunMeToUploadNuGetPackage.cmd** file.
 
