@@ -1,6 +1,4 @@
-# Check and Change PowerShell's Execution Policy
-
-## Check PowerShell's Current Execution Policy
+# Check PowerShell's Current Execution Policy
 
 To check what your current PowerShell execution policy is set to:
 
