@@ -4,7 +4,7 @@ New-NuGetPackage.ps1 is a PowerShell script to make creating and publishing NuGe
 
 This script is also used by a NuGet Package that you can use to [automate making your project's NuGet packages in Visual Studio](docs/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild.md).
 
-__This script depends on [nuget.exe](https://nuget.codeplex.com/releases/view/58939)__, and it is recommended that you [add nuget to your PATH](AddNuGet.exeToYourPath.md).
+__This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, and it is recommended that you [add nuget to your PATH](docs/AddNuGet.exeToYourPath.md).
 
 
 ## Features
