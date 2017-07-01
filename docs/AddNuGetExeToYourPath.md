@@ -12,6 +12,4 @@ To check if nuget.exe is already in your system's PATH:
 If nuget.exe was located on your PC at "C:\My Utilities\nuget.exe", to add nuget.exe to your PATH:
 
 1. Open a command prompt.
-1. Type the following and hit enter:
-
-```set PATH=%PATH%;C:\My Utilities```
+1. Type the following and hit enter: `set PATH=%PATH%;C:\My Utilities`
