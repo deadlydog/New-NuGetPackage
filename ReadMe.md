@@ -1,10 +1,10 @@
 # New-NuGetPackage PowerShell Script Description
 
-New-NuGetPackage.ps1 is a PowerShell script to make creating and publishing NuGet packages quick and easy, using a .nuspec or project file, from Explorer or PS.
+[New-NuGetPackage.ps1][New-NuGetPackageFileUrl] is a PowerShell script to make creating and publishing NuGet packages quick and easy, using a .nuspec or project file, from Explorer or PS.
 
 This script is also used by a NuGet Package that you can use to [automate making your project's NuGet packages in Visual Studio](docs/NuGetPackageToCreateANuGetPackageFromYourProjectAfterEveryBuild.md).
 
-__This script depends on [nuget.exe](https://github.com/NuGet/Home/releases)__, and it is recommended that you [add nuget to your PATH](docs/AddNuGetExeToYourPath.md).
+__This script depends on [nuget.exe][NuGetExeReleasesUrl]__, and it is recommended that you [add nuget to your PATH](docs/AddNuGetExeToYourPath.md).
 
 
 ## Features
@@ -62,3 +62,7 @@ Below are some examples of calling the script with parameters to avoid the GUI p
 ```PowerShell
 & .\New-NuGetPackage.ps1 -PackageFilePath "C:\Some Folder\MyPackage.nupkg"
 ```
+
+<!-- Links -->
+[NuGetExeReleasesUrl]: https://github.com/NuGet/Home/releases
+[New-NuGetPackageFileUrl]: https://github.com/deadlydog/New-NuGetPackage/blob/master/src/New-NuGetPackage.ps1
