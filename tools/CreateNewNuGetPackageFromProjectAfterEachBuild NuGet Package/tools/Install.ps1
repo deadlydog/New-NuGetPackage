@@ -42,8 +42,18 @@ if ($postBuildEventText.Contains($postBuildEventCode))
 	return
 }
 
-# Add the Post-Build Event Code to the project (prepend a couple newlines in case there is existing Post Build Event text).
-$postBuildEventText += "`n`r`n`r$postBuildEventCode"
+#Marker created in Uninstall.ps1
+$postBuildEventCodeMarker = @'
+REM CreateNewNuGetPackageFromProjectAfterEachBuild Update Block
+'@
+
+if ($postBuildEventText.Contains($postBuildEventCodeMarker)) {
+    $postBuildEventText = $postBuildEventText.Replace($postBuildEventCodeMarker, "`n`r`n`r$postBuildEventCode")
+} else {
+    # Add the Post-Build Event Code to the project (prepend a couple newlines in case there is existing Post Build Event text).
+    $postBuildEventText += "`n`r`n`r$postBuildEventCode"
+}
+
 $project.Properties.Item("PostBuildEvent").Value = $postBuildEventText.Trim()
 
 # Change the build action of the NuGet.exe file from Content to None.
