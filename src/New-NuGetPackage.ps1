@@ -158,7 +158,7 @@
 
 	.NOTES
 	Author: Daniel Schroeder
-	Version: 1.5.10
+	Version: 1.5.11
 
 	This script is designed to be called from PowerShell or ran directly from Windows Explorer.
 	If this script is ran without the $NuSpecFilePath, $ProjectFilePath, and $PackageFilePath parameters, it will automatically search for a .nuspec, project, or package file in the
@@ -750,20 +750,41 @@ function Get-TfExecutablePath
 	# If we still don't have a valid path yet, try getting it using the VSSetup module.
 	if (!(Test-Path -Path $TfExecutableFilePath -PathType Leaf))
 	{
-		[bool] $vsSetupExists = $null -ne (Get-Command Get-VSSetupInstance -ErrorAction SilentlyContinue)
-		if (!$vsSetupExists)
+		# Try and install the VSSetup module if needed.
+		[bool] $vsSetupModuleIsInstalled = $null -ne (Get-Command -Name Get-VSSetupInstance -ErrorAction SilentlyContinue)
+		if (!$vsSetupModuleIsInstalled)
 		{
-			Write-Verbose "Importing the VSSetup module in order to determine TF.exe path..." -Verbose
-			Install-Module VSSetup -Scope CurrentUser -Force
+			[bool] $packageProviderCmdletsAreAvailable = $null -eq (Get-Command -Name Install-PackageProvider -ErrorAction SilentlyContinue)
+			if ($packageProviderCmdletsAreAvailable)
+			{
+				[bool] $nuGetPackageProviderIsInstalled = $null -eq (Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)
+				if (!$nuGetPackageProviderIsInstalled)
+				{
+					Write-Verbose "Installing the NuGet package provider in order to obtain the VSSetup module..."
+					Install-PackageProvider -Name NuGet -Force
+				}
+
+				Write-Verbose "Installing the VSSetup module in order to determine TF.exe path..." -Verbose
+				Install-Module VSSetup -Scope CurrentUser -Force
+			}
+			else
+			{
+				Write-Verbose "The PowerShell commands to retrieve the VSSetup module are not available, so we will not be able to determine the path to TF.exe. Likely the version of PowerShell installed is too low." -Verbose
+			}
 		}
-		[string] $visualStudioInstallationPath = (Get-VSSetupInstance | Select-VSSetupInstance -Latest -Require Microsoft.Component.MSBuild).InstallationPath
-		$TfExecutableFilePath = (Get-ChildItem $visualStudioInstallationPath -Recurse -Filter "TF.exe" | Select-Object -First 1).FullName
+
+		[bool] $vsSetupModuleIsInstalled = $null -ne (Get-Command -Name Get-VSSetupInstance -ErrorAction SilentlyContinue)
+		if ($vsSetupModuleIsInstalled)
+		{
+			[string] $visualStudioInstallationPath = (Get-VSSetupInstance | Select-VSSetupInstance -Latest -Require Microsoft.Component.MSBuild).InstallationPath
+			$TfExecutableFilePath = (Get-ChildItem $visualStudioInstallationPath -Recurse -Filter "TF.exe" | Select-Object -First 1).FullName
+		}
 	}
 
 	# If we still don't have a valid path, write a warning about and return an empty string.
     if (!(Test-Path -Path $TfExecutableFilePath -PathType Leaf))
     {
-        Write-Warning "Unable to locate TF.exe"
+        Write-Warning "Unable to locate TF.exe."
         return [string]::Empty
     }
 
