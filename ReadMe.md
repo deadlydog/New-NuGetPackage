@@ -8,7 +8,7 @@ __This script depends on [nuget.exe][NuGetExeReleasesUrl]__, and it is recommend
 
 > [!NOTE]
 > This script and package is most useful for .NET Framework projects.
-> .NET Core projects can natively be configured to create a NuGet package on every build, and it can be published from the command-line with `dotnet nuget push`.
+> .NET Core projects can natively be configured to [create a NuGet package on every build](https://learn.microsoft.com/en-us/nuget/create-packages/creating-a-package-dotnet-cli#automatically-generate-package-on-build), and it can be published from the command-line with `dotnet nuget push`.
 
 ## Features
 
