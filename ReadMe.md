@@ -6,6 +6,9 @@ This script is also used by a NuGet Package that you can use to [automate making
 
 __This script depends on [nuget.exe][NuGetExeReleasesUrl]__, and it is recommended that you [add nuget to your PATH](docs/AddNuGetExeToYourPath.md).
 
+> [!NOTE]
+> This script and package is most useful for .NET Framework projects.
+> .NET Core projects can natively be configured to create a NuGet package on every build, and it can be published from the command-line with `dotnet nuget push`.
 
 ## Features
 
@@ -18,7 +21,6 @@ __This script depends on [nuget.exe][NuGetExeReleasesUrl]__, and it is recommend
 * Parameters may be provided to supply these values and/or suppress the prompts, so it can be integrated into your build system.
 
 The script provides parameters for the Pack and Push Options, which will be passed as-is to nuget.exe, allowing for all of the same functionality as calling nuget.exe directly yourself.
-
 
 ## Getting Started Quickly
 
